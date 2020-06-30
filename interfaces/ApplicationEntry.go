@@ -1,19 +1,19 @@
 package interfaces
 
 type ApplicationEntry struct {
-	version   float32
-	entryType string // type
-	name      string
-	comment   string
-	tryExec   string
-	exec      string
-	icon      string
-	mimeType  string
-	actions   []Action
+	Version  float32
+	Type     string
+	Name     string
+	Comment  string
+	TryExec  string
+	Exec     string
+	Icon     string
+	MimeType string
+	Actions  []Action
 }
 
 type Action struct {
-	name string
-	exec string
-	icon string
+	Name string
+	Exec string
+	Icon string
 }
