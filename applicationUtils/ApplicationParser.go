@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"rmtly-server/interfaces"
 	"strings"
 )
@@ -20,7 +21,7 @@ func Parse(path string) *interfaces.ApplicationEntry {
 
 	defer file.Close()
 
-	applicationEntry := new(interfaces.ApplicationEntry)
+	//applicationEntry := new(interfaces.ApplicationEntry)
 
 	scanner := bufio.NewScanner(file)
 
@@ -31,8 +32,17 @@ func Parse(path string) *interfaces.ApplicationEntry {
 		case isLineEmpty(line):
 			continue
 		case isLineGroup(line):
+			if isLineDesktopEntry(line) {
+				parseEntry(scanner)
+			}
+
+			// check if is group or action group
+			// if action group stop line parsing and continue group parsing
+
+			fmt.Println(line)
+			continue
 		case isLineComment(line):
-			applicationEntry.Comment = getValue(line)
+			continue
 		default:
 			fmt.Printf("line not matched %s", line)
 		}
@@ -74,10 +84,92 @@ func isLineEmpty(line string) bool {
 }
 
 func isLineGroup(line string) bool {
-	// todo check if line contains [*****]
-	return false
+	matched, err := regexp.MatchString("^\\[.*]", line)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return matched
+}
+
+func isLineDesktopEntry(line string) bool {
+	return line == "[Desktop Entry]"
+}
+
+func isLineDesktopAction(line string) bool {
+	// todo check with regex
+	return line == "[Desktop Action Edit]"
+}
+
+func getDesktopActionName(line string) string {
+	return line
 }
 
 func splitToActions() {
 
+}
+
+func onKey(line string, key string, callback func(key string, value string)) {
+	currentKey, value, err := splitLineToKeyValue(line)
+	if err != nil {
+		fmt.Printf("error finding key %s with line %s", key, line)
+		return
+	}
+	if currentKey == key {
+		callback(key, value)
+	}
+}
+
+func parseEntry(scanner *bufio.Scanner) *interfaces.ApplicationEntry {
+	fmt.Println("using entry parser")
+
+	entry := new(interfaces.ApplicationEntry)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		switch {
+		case isLineEmpty(line):
+			continue
+		case isLineGroup(line):
+			return entry
+		default:
+			onKey(line, "Version", func(key string, value string) {
+				//entry.Version = value
+			})
+			onKey(line, "Type", func(key string, value string) {
+				entry.Type = value
+			})
+			onKey(line, "Name", func(key string, value string) {
+				entry.Name = value
+			})
+			onKey(line, "Comment", func(key string, value string) {
+				entry.Comment = value
+			})
+			onKey(line, "TryExec", func(key string, value string) {
+				entry.TryExec = value
+			})
+			onKey(line, "Name", func(key string, value string) {
+				entry.Name = value
+			})
+			onKey(line, "Exec", func(key string, value string) {
+				entry.Exec = value
+			})
+			onKey(line, "Icon", func(key string, value string) {
+				entry.Icon = value
+			})
+			onKey(line, "MimeType", func(key string, value string) {
+				entry.MimeType = value
+			})
+			onKey(line, "Actions", func(key string, value string) {
+			})
+
+			fmt.Printf("line %s ignored\n", line)
+
+		}
+	}
+	return nil
+}
+
+func parseAction(scanner *bufio.Scanner) *interfaces.Action {
+	return nil
 }
