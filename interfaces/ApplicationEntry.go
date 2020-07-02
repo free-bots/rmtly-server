@@ -9,7 +9,7 @@ type ApplicationEntry struct {
 	Exec     string
 	Icon     string
 	MimeType string
-	Actions  []Action
+	Actions  []*Action
 }
 
 type Action struct {

@@ -9,5 +9,5 @@ func main() {
 	fmt.Println("rmtly-server running...")
 
 	const path = "./test.desktop"
-	applicationUtils.Parse(path)
+	fmt.Println(applicationUtils.Parse(path))
 }

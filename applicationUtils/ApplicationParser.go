@@ -21,7 +21,9 @@ func Parse(path string) *interfaces.ApplicationEntry {
 
 	defer file.Close()
 
-	//applicationEntry := new(interfaces.ApplicationEntry)
+	var applicationEntry *interfaces.ApplicationEntry
+	var actions = make([]*interfaces.Action, 0)
+	var stopLine *string
 
 	scanner := bufio.NewScanner(file)
 
@@ -33,8 +35,32 @@ func Parse(path string) *interfaces.ApplicationEntry {
 			continue
 		case isLineGroup(line):
 			if isLineDesktopEntry(line) {
-				parseEntry(scanner)
+				applicationEntry, stopLine = parseEntry(scanner)
+				if stopLine != nil {
+					fmt.Println(*stopLine)
+					if isLineDesktopAction(*stopLine) {
+						fmt.Println("action")
+						var newAction, stopLine = parseAction(scanner)
+						if stopLine != nil {
+							fmt.Println("action stopLine not empty")
+						}
+						if newAction != nil {
+							actions = append(actions, newAction)
+						}
+					}
+				}
 			}
+			if isLineDesktopAction(line) {
+				fmt.Println("action")
+				var newAction, stopLine = parseAction(scanner)
+				if stopLine != nil {
+					fmt.Println("action stopLine not empty")
+				}
+				if newAction != nil {
+					actions = append(actions, newAction)
+				}
+			}
+			// read spec for the .desktop file !!!!!!!
 
 			// check if is group or action group
 			// if action group stop line parsing and continue group parsing
@@ -44,7 +70,7 @@ func Parse(path string) *interfaces.ApplicationEntry {
 		case isLineComment(line):
 			continue
 		default:
-			fmt.Printf("line not matched %s", line)
+			fmt.Printf("line not matched %s\n", line)
 		}
 
 		fmt.Println(splitLineToKeyValue(scanner.Text()))
@@ -54,7 +80,11 @@ func Parse(path string) *interfaces.ApplicationEntry {
 		log.Fatal(err)
 	}
 
-	return nil
+	if applicationEntry != nil {
+		copy(applicationEntry.Actions, actions)
+	}
+
+	return applicationEntry
 }
 
 func getValue(line string) string {
@@ -68,7 +98,7 @@ func getValue(line string) string {
 func splitLineToKeyValue(line string) (key string, value string, err error) {
 	split := strings.Split(line, "=")
 	if split == nil || len(split) <= 1 {
-		return "", "", fmt.Errorf("spliting line to key value failed line:%s", line)
+		return "", "", fmt.Errorf("spliting line to key value failed line:%s\n", line)
 	}
 	return split[0], split[1], nil
 }
@@ -97,8 +127,13 @@ func isLineDesktopEntry(line string) bool {
 }
 
 func isLineDesktopAction(line string) bool {
+	matched, err := regexp.MatchString("^\\[Desktop Action.*]", line)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
 	// todo check with regex
-	return line == "[Desktop Action Edit]"
+	return matched
 }
 
 func getDesktopActionName(line string) string {
@@ -109,18 +144,22 @@ func splitToActions() {
 
 }
 
+func isList(line string) bool {
+	return false
+}
+
 func onKey(line string, key string, callback func(key string, value string)) {
 	currentKey, value, err := splitLineToKeyValue(line)
 	if err != nil {
-		fmt.Printf("error finding key %s with line %s", key, line)
+		fmt.Printf("error finding key %s with line %s\n", key, line)
 		return
 	}
-	if currentKey == key {
+	if currentKey == key && value != "" {
 		callback(key, value)
 	}
 }
 
-func parseEntry(scanner *bufio.Scanner) *interfaces.ApplicationEntry {
+func parseEntry(scanner *bufio.Scanner) (*interfaces.ApplicationEntry, *string) {
 	fmt.Println("using entry parser")
 
 	entry := new(interfaces.ApplicationEntry)
@@ -131,7 +170,7 @@ func parseEntry(scanner *bufio.Scanner) *interfaces.ApplicationEntry {
 		case isLineEmpty(line):
 			continue
 		case isLineGroup(line):
-			return entry
+			return entry, &line
 		default:
 			onKey(line, "Version", func(key string, value string) {
 				//entry.Version = value
@@ -163,13 +202,36 @@ func parseEntry(scanner *bufio.Scanner) *interfaces.ApplicationEntry {
 			onKey(line, "Actions", func(key string, value string) {
 			})
 
-			fmt.Printf("line %s ignored\n", line)
+			//fmt.Printf("line %s ignored\n", line)
 
 		}
 	}
-	return nil
+	return entry, nil
 }
 
-func parseAction(scanner *bufio.Scanner) *interfaces.Action {
-	return nil
+func parseAction(scanner *bufio.Scanner) (*interfaces.Action, *string) {
+
+	var action = new(interfaces.Action)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		switch {
+		case isLineEmpty(line):
+			continue
+		case isLineGroup(line):
+			return action, &line
+		default:
+			onKey(line, "Name", func(key string, value string) {
+				action.Name = value
+			})
+			onKey(line, "Exec", func(key string, value string) {
+				action.Exec = value
+			})
+			onKey(line, "Icon", func(key string, value string) {
+				action.Icon = value
+			})
+		}
+	}
+
+	return action, nil
 }
