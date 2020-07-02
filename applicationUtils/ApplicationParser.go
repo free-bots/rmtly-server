@@ -11,7 +11,7 @@ import (
 )
 
 // parser for .desktop files
-func Parse(path string) *interfaces.ApplicationEntry {
+func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -35,12 +35,12 @@ func Parse(path string) *interfaces.ApplicationEntry {
 			continue
 		case isLineGroup(line):
 			if isLineDesktopEntry(line) {
-				applicationEntry, stopLine = parseEntry(scanner)
+				applicationEntry, stopLine = parseEntry(scanner, removeExecFields)
 				if stopLine != nil {
 					fmt.Println(*stopLine)
 					if isLineDesktopAction(*stopLine) {
 						fmt.Println("action")
-						var newAction, stopLine = parseAction(scanner)
+						var newAction, stopLine = parseAction(scanner, removeExecFields)
 						if stopLine != nil {
 							fmt.Println("action stopLine not empty")
 						}
@@ -52,7 +52,7 @@ func Parse(path string) *interfaces.ApplicationEntry {
 			}
 			if isLineDesktopAction(line) {
 				fmt.Println("action")
-				var newAction, stopLine = parseAction(scanner)
+				var newAction, stopLine = parseAction(scanner, removeExecFields)
 				if stopLine != nil {
 					fmt.Println("action stopLine not empty")
 				}
@@ -159,7 +159,7 @@ func onKey(line string, key string, callback func(key string, value string)) {
 	}
 }
 
-func parseEntry(scanner *bufio.Scanner) (*interfaces.ApplicationEntry, *string) {
+func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.ApplicationEntry, *string) {
 	fmt.Println("using entry parser")
 
 	entry := new(interfaces.ApplicationEntry)
@@ -168,6 +168,8 @@ func parseEntry(scanner *bufio.Scanner) (*interfaces.ApplicationEntry, *string) 
 		line := scanner.Text()
 		switch {
 		case isLineEmpty(line):
+			continue
+		case isLineComment(line):
 			continue
 		case isLineGroup(line):
 			return entry, &line
@@ -191,7 +193,11 @@ func parseEntry(scanner *bufio.Scanner) (*interfaces.ApplicationEntry, *string) 
 				entry.Name = value
 			})
 			onKey(line, "Exec", func(key string, value string) {
-				entry.Exec = value
+				if removeExecFields {
+					entry.Exec = removeExecFieldCodes(value)
+				} else {
+					entry.Exec = value
+				}
 			})
 			onKey(line, "Icon", func(key string, value string) {
 				entry.Icon = value
@@ -209,7 +215,7 @@ func parseEntry(scanner *bufio.Scanner) (*interfaces.ApplicationEntry, *string) 
 	return entry, nil
 }
 
-func parseAction(scanner *bufio.Scanner) (*interfaces.Action, *string) {
+func parseAction(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Action, *string) {
 
 	var action = new(interfaces.Action)
 
@@ -218,6 +224,8 @@ func parseAction(scanner *bufio.Scanner) (*interfaces.Action, *string) {
 		switch {
 		case isLineEmpty(line):
 			continue
+		case isLineComment(line):
+			continue
 		case isLineGroup(line):
 			return action, &line
 		default:
@@ -225,7 +233,11 @@ func parseAction(scanner *bufio.Scanner) (*interfaces.Action, *string) {
 				action.Name = value
 			})
 			onKey(line, "Exec", func(key string, value string) {
-				action.Exec = value
+				if removeExecFields {
+					action.Exec = removeExecFieldCodes(value)
+				} else {
+					action.Exec = value
+				}
 			})
 			onKey(line, "Icon", func(key string, value string) {
 				action.Icon = value
@@ -234,4 +246,21 @@ func parseAction(scanner *bufio.Scanner) (*interfaces.Action, *string) {
 	}
 
 	return action, nil
+}
+
+func removeExecFieldCodes(value string) string {
+	return strings.NewReplacer(
+		"%f", "",
+		"%F", "",
+		"%u", "",
+		"%U", "",
+		"%d", "",
+		"%D", "",
+		"%n", "",
+		"%N", "",
+		"%i", "",
+		"%c", "",
+		"%k", "",
+		"%v", "",
+		"%m", "").Replace(value)
 }
