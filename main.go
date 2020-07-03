@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"rmtly-server/applicationUtils"
+	"rmtly-server/services"
 )
 
 func main() {
@@ -11,6 +12,6 @@ func main() {
 	const path = "./test.desktop"
 	applicationEntry := applicationUtils.Parse(path, true)
 	fmt.Println(applicationEntry)
-	//err := exec.Command(applicationEntry.Exec).Run()
-	//fmt.Println(err)
+	fmt.Println(applicationEntry.Exec)
+	services.RunCommand(applicationEntry.Exec)
 }

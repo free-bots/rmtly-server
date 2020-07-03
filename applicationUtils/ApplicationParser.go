@@ -48,6 +48,7 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 							actions = append(actions, newAction)
 						}
 					}
+					// todo add recursion
 				}
 			}
 			if isLineDesktopAction(line) {
