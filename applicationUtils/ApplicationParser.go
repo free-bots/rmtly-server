@@ -23,7 +23,7 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 
 	var applicationEntry *interfaces.ApplicationEntry
 	var actions = make([]*interfaces.Action, 0)
-	var stopLine *string
+	//var stopLine *string
 
 	scanner := bufio.NewScanner(file)
 
@@ -34,39 +34,7 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 		case isLineEmpty(line):
 			continue
 		case isLineGroup(line):
-			if isLineDesktopEntry(line) {
-				applicationEntry, stopLine = parseEntry(scanner, removeExecFields)
-				if stopLine != nil {
-					fmt.Println(*stopLine)
-					if isLineDesktopAction(*stopLine) {
-						fmt.Println("action")
-						var newAction, stopLine = parseAction(scanner, removeExecFields)
-						if stopLine != nil {
-							fmt.Println("action stopLine not empty")
-						}
-						if newAction != nil {
-							actions = append(actions, newAction)
-						}
-					}
-					// todo add recursion
-				}
-			}
-			if isLineDesktopAction(line) {
-				fmt.Println("action")
-				var newAction, stopLine = parseAction(scanner, removeExecFields)
-				if stopLine != nil {
-					fmt.Println("action stopLine not empty")
-				}
-				if newAction != nil {
-					actions = append(actions, newAction)
-				}
-			}
-			// read spec for the .desktop file !!!!!!!
-
-			// check if is group or action group
-			// if action group stop line parsing and continue group parsing
-
-			fmt.Println(line)
+			applicationEntry = parseGroup(scanner, removeExecFields, line, nil, actions)
 			continue
 		case isLineComment(line):
 			continue
@@ -247,6 +215,29 @@ func parseAction(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Act
 	}
 
 	return action, nil
+}
+
+func parseGroup(scanner *bufio.Scanner, removeExecFields bool, line string, applicationEntry *interfaces.ApplicationEntry, actions []*interfaces.Action) *interfaces.ApplicationEntry {
+	if isLineDesktopEntry(line) {
+		var stopLine *string
+		applicationEntry, stopLine = parseEntry(scanner, removeExecFields)
+		if stopLine != nil {
+			return parseGroup(scanner, removeExecFields, *stopLine, applicationEntry, actions)
+		}
+	}
+
+	if isLineDesktopAction(line) {
+		fmt.Println("action")
+		var newAction, stopLine = parseAction(scanner, removeExecFields)
+		if newAction != nil {
+			actions = append(actions, newAction)
+		}
+		if stopLine != nil {
+			return parseGroup(scanner, removeExecFields, *stopLine, applicationEntry, actions)
+		}
+	}
+
+	return applicationEntry
 }
 
 func removeExecFieldCodes(value string) string {
