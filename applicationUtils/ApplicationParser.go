@@ -56,14 +56,6 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 	return applicationEntry
 }
 
-func getValue(line string) string {
-	_, value, splitErr := splitLineToKeyValue(line)
-	if splitErr != nil {
-		log.Fatal(splitErr)
-	}
-	return value
-}
-
 func splitLineToKeyValue(line string) (key string, value string, err error) {
 	split := strings.Split(line, "=")
 	if split == nil || len(split) <= 1 {
@@ -107,10 +99,6 @@ func isLineDesktopAction(line string) bool {
 
 func getDesktopActionName(line string) string {
 	return line
-}
-
-func splitToActions() {
-
 }
 
 func isList(line string) bool {

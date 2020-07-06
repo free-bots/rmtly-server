@@ -13,7 +13,7 @@ func GetApplications() []*interfaces.ApplicationEntry {
 	return make([]*interfaces.ApplicationEntry, 0)
 }
 
-func RunCommand(command string) {
+func RunCommand(command string, c chan bool) {
 	args, err := shlex.Split(command)
 	if err != nil {
 		fmt.Println(err)
@@ -21,6 +21,7 @@ func RunCommand(command string) {
 	}
 
 	if args == nil || len(args) == 0 {
+		c <- false
 		return
 	}
 
@@ -32,5 +33,9 @@ func RunCommand(command string) {
 
 	if err != nil {
 		fmt.Println(err)
+		c <- false
+		return
 	}
+
+	c <- true
 }

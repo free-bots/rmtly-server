@@ -11,7 +11,9 @@ func main() {
 
 	const path = "./test.desktop"
 	applicationEntry := applicationUtils.Parse(path, true)
-	fmt.Println(applicationEntry)
-	fmt.Println(applicationEntry.Exec)
-	services.RunCommand(applicationEntry.Exec)
+
+	c := make(chan bool)
+	go services.RunCommand(applicationEntry.Exec, c)
+
+	fmt.Printf("running %s succesful %t", applicationEntry.Exec, <-c)
 }
