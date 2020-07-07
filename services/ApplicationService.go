@@ -3,14 +3,35 @@ package services
 import (
 	"fmt"
 	"github.com/google/shlex"
+	"os"
 	"os/exec"
+	"rmtly-server/applicationUtils"
 	"rmtly-server/interfaces"
 )
 
 const DEFAULT_PATH = "/usr/share/applications"
 
 func GetApplications() []*interfaces.ApplicationEntry {
-	return make([]*interfaces.ApplicationEntry, 0)
+	applications := make([]*interfaces.ApplicationEntry, 0)
+
+	file, err := os.Open(DEFAULT_PATH)
+
+	if err != nil {
+		return nil
+	}
+
+	fileNames, err := file.Readdirnames(0)
+
+	if err != nil {
+		return nil
+	}
+
+	for _, name := range fileNames {
+		application := applicationUtils.Parse(DEFAULT_PATH+string(os.PathSeparator)+name, true)
+		applications = append(applications, application)
+	}
+
+	return applications
 }
 
 func RunCommand(command string, c chan bool) {

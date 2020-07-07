@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"rmtly-server/applicationUtils"
 	"rmtly-server/routers"
-	"rmtly-server/services"
 	"time"
 )
 
@@ -23,6 +23,20 @@ func main() {
 	fmt.Println("rmtly-server running...")
 
 	router := routers.RootRouter()
+
+	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
+
+		const path = "./test.desktop"
+		applicationEntry := applicationUtils.Parse(path, true)
+
+		//c := make(chan bool)
+		//go services.RunCommand(applicationEntry.Exec, c)
+		//
+		//fmt.Printf("running %s succesful %t", applicationEntry.Exec, <-c)
+		bytes, _ := json.Marshal(applicationEntry)
+		writer.Write(bytes)
+		writer.WriteHeader(http.StatusOK)
+	})
 
 	server := &http.Server{
 		Addr:              "0.0.0.0:3000",
@@ -44,11 +58,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-	const path = "./test.desktop"
-	applicationEntry := applicationUtils.Parse(path, true)
-
-	c := make(chan bool)
-	go services.RunCommand(applicationEntry.Exec, c)
-
-	fmt.Printf("running %s succesful %t", applicationEntry.Exec, <-c)
 }

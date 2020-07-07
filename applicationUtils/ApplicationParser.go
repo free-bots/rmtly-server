@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"rmtly-server/interfaces"
+	"strconv"
 	"strings"
 )
 
@@ -23,7 +24,6 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 
 	var applicationEntry *interfaces.ApplicationEntry
 	var actions = make([]*interfaces.Action, 0)
-	//var stopLine *string
 
 	scanner := bufio.NewScanner(file)
 
@@ -34,7 +34,7 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 		case isLineEmpty(line):
 			continue
 		case isLineGroup(line):
-			applicationEntry = parseGroup(scanner, removeExecFields, line, nil, actions)
+			applicationEntry, actions = parseGroup(scanner, removeExecFields, line, nil, actions)
 			continue
 		case isLineComment(line):
 			continue
@@ -50,7 +50,11 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 	}
 
 	if applicationEntry != nil {
-		copy(applicationEntry.Actions, actions)
+		applicationEntry.Actions = actions
+
+		splitFileName := strings.Split(file.Name(), "/")
+		length := len(splitFileName)
+		applicationEntry.Id = splitFileName[length-1]
 	}
 
 	return applicationEntry
@@ -132,7 +136,13 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 			return entry, &line
 		default:
 			onKey(line, "Version", func(key string, value string) {
-				//entry.Version = value
+				float, err := strconv.ParseFloat(value, 32)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+
+				entry.Version = float32(float)
 			})
 			onKey(line, "Type", func(key string, value string) {
 				entry.Type = value
@@ -205,7 +215,7 @@ func parseAction(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Act
 	return action, nil
 }
 
-func parseGroup(scanner *bufio.Scanner, removeExecFields bool, line string, applicationEntry *interfaces.ApplicationEntry, actions []*interfaces.Action) *interfaces.ApplicationEntry {
+func parseGroup(scanner *bufio.Scanner, removeExecFields bool, line string, applicationEntry *interfaces.ApplicationEntry, actions []*interfaces.Action) (*interfaces.ApplicationEntry, []*interfaces.Action) {
 	if isLineDesktopEntry(line) {
 		var stopLine *string
 		applicationEntry, stopLine = parseEntry(scanner, removeExecFields)
@@ -225,7 +235,7 @@ func parseGroup(scanner *bufio.Scanner, removeExecFields bool, line string, appl
 		}
 	}
 
-	return applicationEntry
+	return applicationEntry, actions
 }
 
 func removeExecFieldCodes(value string) string {

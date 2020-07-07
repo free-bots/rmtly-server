@@ -1,19 +1,20 @@
 package interfaces
 
 type ApplicationEntry struct {
-	Version  float32
-	Type     string
-	Name     string
-	Comment  string
-	TryExec  string
-	Exec     string
-	Icon     string
-	MimeType string
-	Actions  []*Action
+	Id       string    `json:"id"`
+	Version  float32   `json:"version"`
+	Type     string    `json:"type"`
+	Name     string    `json:"name"`
+	Comment  string    `json:"comment"`
+	TryExec  string    `json:"tryExec"`
+	Exec     string    `json:"exec"`
+	Icon     string    `json:"icon"`
+	MimeType string    `json:"mimeType"`
+	Actions  []*Action `json:"actions"`
 }
 
 type Action struct {
-	Name string
-	Exec string
-	Icon string
+	Name string `json:"name"`
+	Exec string `json:"exec"`
+	Icon string `json:"icon"`
 }
