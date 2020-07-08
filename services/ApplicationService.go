@@ -9,12 +9,12 @@ import (
 	"rmtly-server/interfaces"
 )
 
-const DEFAULT_PATH = "/usr/share/applications"
+const DefaultPath = "/usr/share/applications"
 
 func GetApplications() []*interfaces.ApplicationEntry {
 	applications := make([]*interfaces.ApplicationEntry, 0)
 
-	file, err := os.Open(DEFAULT_PATH)
+	file, err := os.Open(DefaultPath)
 
 	if err != nil {
 		return nil
@@ -27,11 +27,30 @@ func GetApplications() []*interfaces.ApplicationEntry {
 	}
 
 	for _, name := range fileNames {
-		application := applicationUtils.Parse(DEFAULT_PATH+string(os.PathSeparator)+name, true)
+		application := applicationUtils.Parse(DefaultPath+string(os.PathSeparator)+name, true)
 		applications = append(applications, application)
 	}
 
 	return applications
+}
+
+func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
+	applications := GetApplications()
+	if applications == nil {
+		return nil
+	}
+
+	for _, application := range applications {
+		if application == nil {
+			continue
+		}
+
+		if application.Id == applicationId {
+			return application
+		}
+	}
+
+	return nil
 }
 
 func RunCommand(command string, c chan bool) {

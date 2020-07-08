@@ -24,7 +24,7 @@ func ApplicationRouter(router *mux.Router) {
 					return
 				}
 
-				writer.Write(bytes)
+				_, _ = writer.Write(bytes)
 				writer.WriteHeader(http.StatusOK)
 
 			}, func(writer http.ResponseWriter, request *http.Request) {
@@ -36,4 +36,30 @@ func ApplicationRouter(router *mux.Router) {
 			})
 	})
 
+	subRouter.HandleFunc("/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
+		vars := mux.Vars(request)
+		application := services.GetApplicationById(vars["applicationId"])
+		bytes, err := json.Marshal(application)
+		if err != nil || application == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = writer.Write(bytes)
+		writer.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
+
+	subRouter.HandleFunc("/run/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
+		vars := mux.Vars(request)
+		application := services.GetApplicationById(vars["applicationId"])
+		bytes, err := json.Marshal(application)
+		if err != nil || application == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = writer.Write(bytes)
+		writer.WriteHeader(http.StatusOK)
+
+		c := make(chan bool)
+		go services.RunCommand(application.Exec, c)
+	})
 }
