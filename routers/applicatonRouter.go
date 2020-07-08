@@ -13,16 +13,27 @@ func ApplicationRouter(router *mux.Router) {
 	subRouter := router.PathPrefix(PREFIX).Subrouter()
 
 	subRouter.HandleFunc("", func(writer http.ResponseWriter, request *http.Request) {
-		applications := services.GetApplications()
+		MethodHandler(writer, request,
+			func(writer http.ResponseWriter, request *http.Request) {
 
-		bytes, err := json.Marshal(applications)
-		if err != nil {
-			writer.WriteHeader(http.StatusBadRequest)
-			return
-		}
+				applications := services.GetApplications()
 
-		writer.Write(bytes)
-		writer.WriteHeader(http.StatusOK)
+				bytes, err := json.Marshal(applications)
+				if err != nil {
+					writer.WriteHeader(http.StatusBadRequest)
+					return
+				}
+
+				writer.Write(bytes)
+				writer.WriteHeader(http.StatusOK)
+
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			})
 	})
 
 }
