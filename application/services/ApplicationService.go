@@ -5,8 +5,8 @@ import (
 	"github.com/google/shlex"
 	"os"
 	"os/exec"
-	"rmtly-server/applicationUtils"
-	"rmtly-server/interfaces"
+	"rmtly-server/application/applicationUtils"
+	"rmtly-server/application/interfaces"
 )
 
 const DefaultPath = "/usr/share/applications"

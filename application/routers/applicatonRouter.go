@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"rmtly-server/services"
+	"rmtly-server/application/routers/routersUtil"
+	"rmtly-server/application/services"
 )
 
 const PREFIX = "/applications"
@@ -13,7 +14,7 @@ func ApplicationRouter(router *mux.Router) {
 	subRouter := router.PathPrefix(PREFIX).Subrouter()
 
 	subRouter.HandleFunc("", func(writer http.ResponseWriter, request *http.Request) {
-		MethodHandler(writer, request,
+		routersUtil.MethodHandler(writer, request,
 			func(writer http.ResponseWriter, request *http.Request) {
 
 				applications := services.GetApplications()

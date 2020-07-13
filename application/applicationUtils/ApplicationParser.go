@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"rmtly-server/interfaces"
+	"rmtly-server/application/interfaces"
 	"strconv"
 	"strings"
 )

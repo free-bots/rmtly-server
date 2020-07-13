@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"rmtly-server/applicationUtils"
+	"rmtly-server/application/applicationUtils"
 	"rmtly-server/routers"
 	"time"
 )

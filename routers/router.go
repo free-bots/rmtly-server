@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gorilla/mux"
 	"net/http"
+	"rmtly-server/application/routers"
 )
 
 const BRANDING = "                _   _\n" +
@@ -22,26 +23,7 @@ func RootRouter() *mux.Router {
 		writer.WriteHeader(http.StatusOK)
 	})
 
-	ApplicationRouter(router)
+	routers.ApplicationRouter(router)
 
 	return router
-}
-
-func MethodHandler(writer http.ResponseWriter, request *http.Request,
-	onGet func(writer http.ResponseWriter, request *http.Request),
-	onPost func(writer http.ResponseWriter, request *http.Request),
-	onPut func(writer http.ResponseWriter, request *http.Request),
-	onDelete func(writer http.ResponseWriter, request *http.Request)) {
-	switch request.Method {
-	case http.MethodGet:
-		onGet(writer, request)
-	case http.MethodPost:
-		onPost(writer, request)
-	case http.MethodPut:
-		onPut(writer, request)
-	case http.MethodDelete:
-		onDelete(writer, request)
-	default:
-		writer.WriteHeader(http.StatusBadRequest)
-	}
 }
