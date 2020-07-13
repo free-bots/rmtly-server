@@ -106,7 +106,22 @@ func getDesktopActionName(line string) string {
 }
 
 func isList(line string) bool {
-	return false
+	index := strings.Index(line, ";")
+	return index > -1
+}
+
+func getList(line string) []string {
+	splitItems := strings.Split(line, ";")
+
+	list := make([]string, 0)
+
+	for _, value := range splitItems {
+		if value != "" {
+			list = append(list, value)
+		}
+	}
+
+	return list
 }
 
 func onKey(line string, key string, callback func(key string, value string)) {
@@ -173,6 +188,11 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 				entry.MimeType = value
 			})
 			onKey(line, "Actions", func(key string, value string) {
+			})
+			onKey(line, "Categories", func(key string, value string) {
+				if isList(value) {
+					entry.Categories = getList(value)
+				}
 			})
 
 			//fmt.Printf("line %s ignored\n", line)
