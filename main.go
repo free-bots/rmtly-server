@@ -34,7 +34,7 @@ func main() {
 		//
 		//fmt.Printf("running %s succesful %t", applicationEntry.Exec, <-c)
 		bytes, _ := json.Marshal(applicationEntry)
-		writer.Write(bytes)
+		_, _ = writer.Write(bytes)
 		writer.WriteHeader(http.StatusOK)
 	})
 

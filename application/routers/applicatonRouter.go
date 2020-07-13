@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"rmtly-server/application/routers/routersUtil"
 	"rmtly-server/application/services"
+	notificationService "rmtly-server/notification/services"
 )
 
 const PREFIX = "/applications"
@@ -62,5 +63,6 @@ func ApplicationRouter(router *mux.Router) {
 
 		c := make(chan bool)
 		go services.RunCommand(application.Exec, c)
+		notificationService.SendAsync(application.Name, "executed by rmtly-server")
 	})
 }

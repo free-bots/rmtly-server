@@ -19,7 +19,7 @@ func RootRouter() *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		writer.Write([]byte(BRANDING))
+		_, _ = writer.Write([]byte(BRANDING))
 		writer.WriteHeader(http.StatusOK)
 	})
 
