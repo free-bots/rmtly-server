@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"rmtly-server/application/routers"
+	routers2 "rmtly-server/notification/routers"
 )
 
 const BRANDING = "                _   _\n" +
@@ -24,6 +25,7 @@ func RootRouter() *mux.Router {
 	})
 
 	routers.ApplicationRouter(router)
+	routers2.NotificationRouter(router)
 
 	return router
 }
