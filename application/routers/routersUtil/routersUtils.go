@@ -20,3 +20,7 @@ func MethodHandler(writer http.ResponseWriter, request *http.Request,
 		writer.WriteHeader(http.StatusBadRequest)
 	}
 }
+
+func ContentTypeJson(writer http.ResponseWriter) {
+	writer.Header().Add("content-type", "application/json")
+}

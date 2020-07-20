@@ -26,7 +26,10 @@ func ApplicationRouter(router *mux.Router) {
 					return
 				}
 
+				routersUtil.ContentTypeJson(writer)
+
 				_, _ = writer.Write(bytes)
+
 				writer.WriteHeader(http.StatusOK)
 
 			}, func(writer http.ResponseWriter, request *http.Request) {
@@ -46,6 +49,9 @@ func ApplicationRouter(router *mux.Router) {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		routersUtil.ContentTypeJson(writer)
+
 		_, _ = writer.Write(bytes)
 		writer.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
@@ -58,7 +64,11 @@ func ApplicationRouter(router *mux.Router) {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		routersUtil.ContentTypeJson(writer)
+
 		_, _ = writer.Write(bytes)
+
 		writer.WriteHeader(http.StatusOK)
 
 		c := make(chan bool)
