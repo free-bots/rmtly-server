@@ -20,7 +20,12 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 		return nil
 	}
 
-	defer file.Close()
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	var applicationEntry *interfaces.ApplicationEntry
 	var actions = make([]*interfaces.Action, 0)
@@ -99,10 +104,6 @@ func isLineDesktopAction(line string) bool {
 	}
 	// todo check with regex
 	return matched
-}
-
-func getDesktopActionName(line string) string {
-	return line
 }
 
 func isList(line string) bool {
@@ -185,7 +186,9 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 				entry.Icon = value
 			})
 			onKey(line, "MimeType", func(key string, value string) {
-				entry.MimeType = value
+				if isList(value) {
+					entry.MimeType = getList(value)
+				}
 			})
 			onKey(line, "Actions", func(key string, value string) {
 			})

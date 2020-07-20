@@ -9,7 +9,7 @@ type ApplicationEntry struct {
 	TryExec    string    `json:"tryExec"`
 	Exec       string    `json:"exec"`
 	Icon       string    `json:"icon"`
-	MimeType   string    `json:"mimeType"`
+	MimeType   []string  `json:"mimeType"`
 	Actions    []*Action `json:"actions"`
 	Categories []string  `json:"categories"`
 }
