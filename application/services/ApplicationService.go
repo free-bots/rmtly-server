@@ -5,7 +5,7 @@ import (
 	"github.com/google/shlex"
 	"os"
 	"os/exec"
-	"rmtly-server/application/applicationUtils"
+	application2 "rmtly-server/application/applicationUtils/parser/application"
 	"rmtly-server/application/interfaces"
 )
 
@@ -27,7 +27,7 @@ func GetApplications() []*interfaces.ApplicationEntry {
 	}
 
 	for _, name := range fileNames {
-		application := applicationUtils.Parse(DefaultPath+string(os.PathSeparator)+name, true)
+		application := application2.Parse(DefaultPath+string(os.PathSeparator)+name, true)
 		applications = append(applications, application)
 	}
 

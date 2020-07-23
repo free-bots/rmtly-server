@@ -1,4 +1,4 @@
-package applicationUtils
+package application
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"rmtly-server/application/applicationUtils/parser"
 	"rmtly-server/application/interfaces"
 	"strconv"
 	"strings"
@@ -36,18 +37,18 @@ func Parse(path string, removeExecFields bool) *interfaces.ApplicationEntry {
 		line := scanner.Text()
 
 		switch {
-		case isLineEmpty(line):
+		case parser.IsLineEmpty(line):
 			continue
-		case isLineGroup(line):
+		case parser.IsLineGroup(line):
 			applicationEntry, actions = parseGroup(scanner, removeExecFields, line, nil, actions)
 			continue
-		case isLineComment(line):
+		case parser.IsLineComment(line):
 			continue
 		default:
 			fmt.Printf("line not matched %s\n", line)
 		}
 
-		fmt.Println(splitLineToKeyValue(scanner.Text()))
+		fmt.Println(parser.SplitLineToKeyValue(scanner.Text()))
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -87,14 +88,14 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch {
-		case isLineEmpty(line):
+		case parser.IsLineEmpty(line):
 			continue
-		case isLineComment(line):
+		case parser.IsLineComment(line):
 			continue
-		case isLineGroup(line):
+		case parser.IsLineGroup(line):
 			return entry, &line
 		default:
-			onKey(line, "Version", func(key string, value string) {
+			parser.OnKey(line, "Version", func(key string, value string) {
 				float, err := strconv.ParseFloat(value, 32)
 				if err != nil {
 					fmt.Println(err)
@@ -103,41 +104,41 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 
 				entry.Version = float32(float)
 			})
-			onKey(line, "Type", func(key string, value string) {
+			parser.OnKey(line, "Type", func(key string, value string) {
 				entry.Type = value
 			})
-			onKey(line, "Name", func(key string, value string) {
+			parser.OnKey(line, "Name", func(key string, value string) {
 				entry.Name = value
 			})
-			onKey(line, "Comment", func(key string, value string) {
+			parser.OnKey(line, "Comment", func(key string, value string) {
 				entry.Comment = value
 			})
-			onKey(line, "TryExec", func(key string, value string) {
+			parser.OnKey(line, "TryExec", func(key string, value string) {
 				entry.TryExec = value
 			})
-			onKey(line, "Name", func(key string, value string) {
+			parser.OnKey(line, "Name", func(key string, value string) {
 				entry.Name = value
 			})
-			onKey(line, "Exec", func(key string, value string) {
+			parser.OnKey(line, "Exec", func(key string, value string) {
 				if removeExecFields {
 					entry.Exec = removeExecFieldCodes(value)
 				} else {
 					entry.Exec = value
 				}
 			})
-			onKey(line, "Icon", func(key string, value string) {
+			parser.OnKey(line, "Icon", func(key string, value string) {
 				entry.Icon = value
 			})
-			onKey(line, "MimeType", func(key string, value string) {
-				if isSemicolonList(value) {
-					entry.MimeType = getSemicolonList(value)
+			parser.OnKey(line, "MimeType", func(key string, value string) {
+				if parser.IsSemicolonList(value) {
+					entry.MimeType = parser.GetSemicolonList(value)
 				}
 			})
-			onKey(line, "Actions", func(key string, value string) {
+			parser.OnKey(line, "Actions", func(key string, value string) {
 			})
-			onKey(line, "Categories", func(key string, value string) {
-				if isSemicolonList(value) {
-					entry.Categories = getSemicolonList(value)
+			parser.OnKey(line, "Categories", func(key string, value string) {
+				if parser.IsSemicolonList(value) {
+					entry.Categories = parser.GetSemicolonList(value)
 				}
 			})
 
@@ -155,24 +156,24 @@ func parseAction(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Act
 	for scanner.Scan() {
 		line := scanner.Text()
 		switch {
-		case isLineEmpty(line):
+		case parser.IsLineEmpty(line):
 			continue
-		case isLineComment(line):
+		case parser.IsLineComment(line):
 			continue
-		case isLineGroup(line):
+		case parser.IsLineGroup(line):
 			return action, &line
 		default:
-			onKey(line, "Name", func(key string, value string) {
+			parser.OnKey(line, "Name", func(key string, value string) {
 				action.Name = value
 			})
-			onKey(line, "Exec", func(key string, value string) {
+			parser.OnKey(line, "Exec", func(key string, value string) {
 				if removeExecFields {
 					action.Exec = removeExecFieldCodes(value)
 				} else {
 					action.Exec = value
 				}
 			})
-			onKey(line, "Icon", func(key string, value string) {
+			parser.OnKey(line, "Icon", func(key string, value string) {
 				action.Icon = value
 			})
 		}
