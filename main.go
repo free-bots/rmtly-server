@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gotk3/gotk3/gtk"
+	"image/png"
 	"log"
 	"net/http"
+	"os"
+	"rmtly-server/application/applicationUtils"
 	"rmtly-server/application/applicationUtils/parser/application"
-	"rmtly-server/application/applicationUtils/parser/iconTheme"
 	"rmtly-server/routers"
 	"time"
 )
@@ -24,20 +25,10 @@ import (
 func main() {
 	fmt.Println("rmtly-server running...")
 
-	theme, themeErr := gtk.IconThemeGetDefault()
+	image := applicationUtils.GetIcon("org.gnome.gedit")
 
-	if themeErr != nil {
-		fmt.Println(themeErr)
-	} else {
-		buff, err := theme.LoadIcon("org.gnome.gedit", 0, gtk.ICON_LOOKUP_FORCE_SVG)
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			buff.GetHeight()
-		}
-	}
-
-	fmt.Println(iconTheme.ParseIconThemeIndex("./"))
+	f, _ := os.Create("image.png")
+	_ = png.Encode(f, image)
 
 	router := routers.RootRouter()
 
