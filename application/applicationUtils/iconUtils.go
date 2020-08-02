@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ImageQuality = 512
+	QUALITY = 512 // image size in pixel
 )
 
 func GetIcon(iconName string) *image.RGBA {
@@ -24,7 +24,7 @@ func GetIcon(iconName string) *image.RGBA {
 		return nil
 	}
 
-	buff, err := theme.LoadIcon(iconName, ImageQuality, 0)
+	buff, err := theme.LoadIcon(iconName, QUALITY, 0)
 
 	if err != nil {
 		fmt.Println(err)

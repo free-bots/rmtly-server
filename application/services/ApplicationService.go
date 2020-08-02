@@ -5,6 +5,7 @@ import (
 	"github.com/google/shlex"
 	"os"
 	"os/exec"
+	"rmtly-server/application/applicationUtils"
 	application2 "rmtly-server/application/applicationUtils/parser/application"
 	"rmtly-server/application/interfaces"
 )
@@ -78,4 +79,27 @@ func RunCommand(command string, c chan bool) {
 	}
 
 	c <- true
+}
+
+func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
+
+	response := new(interfaces.IconResponse)
+	response.ApplicationId = applicationId
+
+	application := GetApplicationById(applicationId)
+
+	if application == nil {
+		return response
+	}
+
+	// todo check if application is path
+
+	icon := applicationUtils.GetIcon(application.Icon)
+
+	if icon == nil {
+		return response
+	}
+
+	response.IconBase64 = applicationUtils.ImageToBase64(icon)
+	return response
 }

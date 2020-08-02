@@ -56,6 +56,21 @@ func ApplicationRouter(router *mux.Router) {
 		writer.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 
+	subRouter.HandleFunc("/{applicationId}/icon", func(writer http.ResponseWriter, request *http.Request) {
+		vars := mux.Vars(request)
+		icon := services.GetIconOfApplication(vars["applicationId"])
+		bytes, err := json.Marshal(icon)
+		if err != nil || icon == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		routersUtil.ContentTypeJson(writer)
+
+		_, _ = writer.Write(bytes)
+		writer.WriteHeader(http.StatusOK)
+	}).Methods(http.MethodGet)
+
 	subRouter.HandleFunc("/run/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
 		application := services.GetApplicationById(vars["applicationId"])
