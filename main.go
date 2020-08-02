@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mdp/qrterminal/v3"
 	"image/png"
 	"log"
 	"net/http"
@@ -24,6 +25,8 @@ import (
 
 func main() {
 	fmt.Println("rmtly-server running...")
+
+	qrterminal.Generate("https://github.com/mdp/qrterminal", qrterminal.L, os.Stdout)
 
 	image := applicationUtils.GetIcon("org.gnome.gedit")
 
