@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gotk3/gotk3/gtk"
 	"log"
 	"net/http"
-	"rmtly-server/application/applicationUtils"
+	"rmtly-server/application/applicationUtils/parser/application"
+	"rmtly-server/application/applicationUtils/parser/iconTheme"
 	"rmtly-server/routers"
 	"time"
 )
@@ -22,12 +24,27 @@ import (
 func main() {
 	fmt.Println("rmtly-server running...")
 
+	theme, themeErr := gtk.IconThemeGetDefault()
+
+	if themeErr != nil {
+		fmt.Println(themeErr)
+	} else {
+		buff, err := theme.LoadIcon("org.gnome.gedit", 0, gtk.ICON_LOOKUP_FORCE_SVG)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			buff.GetHeight()
+		}
+	}
+
+	fmt.Println(iconTheme.ParseIconThemeIndex("./"))
+
 	router := routers.RootRouter()
 
 	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
 
 		const path = "./test.desktop"
-		applicationEntry := applicationUtils.Parse(path, true)
+		applicationEntry := application.Parse(path, true)
 
 		//c := make(chan bool)
 		//go services.RunCommand(applicationEntry.Exec, c)

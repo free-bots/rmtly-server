@@ -11,9 +11,9 @@ import (
 	"strconv"
 )
 
-func ParseIconThemeIndex(path string) *interfaces.IconTheme {
+func ParseIconThemeIndex(themeFolder string) *interfaces.IconTheme {
 
-	file, err := os.Open(path)
+	file, err := os.Open(themeFolder + string(os.PathSeparator) + "index.theme")
 	if err != nil {
 		log.Fatal(err)
 		return nil
@@ -49,6 +49,10 @@ func ParseIconThemeIndex(path string) *interfaces.IconTheme {
 			log.Fatal(err)
 		}
 
+	}
+
+	if theme != nil {
+		theme.RootFolder = themeFolder
 	}
 
 	return theme

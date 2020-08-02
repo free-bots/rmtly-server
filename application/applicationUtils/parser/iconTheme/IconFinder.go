@@ -1,12 +1,17 @@
 package iconTheme
 
-//
 //import (
 //	"fmt"
 //	"math"
 //	"os"
+//	"path/filepath"
 //	"rmtly-server/application/interfaces"
+//	"strings"
 //)
+//
+//
+////todo use gtk_icon_theme_lookup_icon from gotk3 lib
+//
 //
 //func GetCurrentTheme() *interfaces.IconTheme {
 //	return nil
@@ -17,7 +22,7 @@ package iconTheme
 //}
 //
 //func FindIcon(icon string, size float32, scale string) *string {
-//	// todo check if icon is file path
+//	// todo check if icon is file path -> look up icon directly
 //
 //
 //	currentTheme :=  GetCurrentTheme()
@@ -45,8 +50,8 @@ package iconTheme
 //		return fileName
 //	}
 //
-//	if true { // todo theme has parrent
-//		parents := make([]interfaces.IconTheme, 0)
+//	if theme.HasThemesParents() { // todo theme has parrent
+//		parents := theme.GetParents()
 //		for _, value := range parents {
 //			fileName = FindIconHelper(icon, size, scale, value)
 //			if fileName != nil {
@@ -59,11 +64,38 @@ package iconTheme
 //}
 //
 //func LookUpIcon(iconName string, size float32, scale string, theme interfaces.IconTheme) *string {
-//	for _, themeSubDir := range make([]string, 0) { // todo sub directoryies of theme
-//		for _, directory := range make([]string, 0) { // todo directory in $(basename list)
-//			for _, extension := range make([]string, 0) { // extension in ("png", "svg", "xpm")
+//	for _, themeSubDir := range theme.Directories { // todo sub directoryies of theme
+//		file, err := os.Open(theme.RootFolder + "/" + themeSubDir)
+//		if err != nil {
+//			_ := file.Close()
+//			fmt.Print(err)
+//			continue
+//		}
+//		directories, err := file.Readdirnames(0)
+//		if err != nil {
+//			fmt.Println(err)
+//			_:= file.Close()
+//			continue
+//		}
+//		_ := file.Close()
+//
+//		for _, directory := range directories { // todo directory in $(basename list)
+//			// todo get files of directory
+//			file, err := os.Open(directory)
+//			if err != nil {
+//				fmt.Println(err)
+//				_:=file.Close()
+//				continue
+//			}
+//
+//			currentFileName := file.Name()
+//			extension := strings.ToLower(filepath.Ext(currentFileName))
+//			_ := file.Close()
+//			if extension == "png" || extension == "svg" || extension == "xpm" {
+//				// todo add file to list
+//
 //				if DirectoryMatchesSize(themeSubDir, size, scale) {
-//					fileName := fmt.Sprintf("%s/%s/%s/iconname.extension", directory, theme, themeSubDir) // todo 					fileName := fmt.Sprintf("%s/%s/%s/iconname.extension", directory, theme, themeSubDir )
+//					fileName := fmt.Sprintf("%s/%s/%s/%s.%s", directory, theme.RootFolder, themeSubDir, currentFileName, extension)
 //					file, _ := os.Open(fileName)
 //					if file != nil{
 //						// todo file exists
@@ -71,24 +103,54 @@ package iconTheme
 //					}
 //				}
 //			}
+//
+//			//for _, extension := range make([]string, 0) { // extension in ("png", "svg", "xpm")
+//			//	if DirectoryMatchesSize(themeSubDir, size, scale) {
+//			//		fileName := fmt.Sprintf("%s/%s/%s/iconname.extension", directory, theme, themeSubDir) // todo 					fileName := fmt.Sprintf("%s/%s/%s/iconname.extension", directory, theme, themeSubDir )
+//			//		file, _ := os.Open(fileName)
+//			//		if file != nil{
+//			//			// todo file exists
+//			//			return &fileName
+//			//		}
+//			//	}
+//			//}
 //		}
 //	}
+//
 //	minimal_size := math.MaxFloat32
+//
+//	var closestFileName *string
+//
 //	for _, subDir := range theme.Directories{
-//		for each directory in $(basename list) {
-//			for extension in("png", "svg", "xpm") {
-//				filename = directory /$(themename) / subdir / iconname.extension
-//				if exist filename
-//				and
-//				DirectorySizeDistance(subdir, size, scale) < minimal_size{
-//					closest_filename = filename
-//					minimal_size = DirectorySizeDistance(subdir, size, scale)
+//		baseName := filepath.Base(subDir)
+//		file, err := os.Open(baseName)
+//		if err != nil {
+//			fmt.Println(err)
+//			_ := file.Close()
+//			continue
+//		}
+//
+//		currentSubDirs, err := file.Readdirnames()
+//		if err != nil {
+//			fmt.Println(err)
+//			_ := file.Close()
+//			continue
+//		}
+//		for _, dir := range currentSubDirs {
+//			currentFileName := file.Name()
+//			extension := filepath.Ext(currentFileName)
+//			extension = strings.ToLower(extension)
+//			if extension == "png" || extension == "svg" || extension == "xpm" {
+//				fileName := fmt.Sprintf("%s/%s/%s.%s", dir, subDir, iconName, extension)
+//				if true  && DirectorySizeDistance(subDir, size, scale) < minimal_size{ // todo file exists and DirectorySizeDistance(subdir, size, scale) < minimal_size{
+//					closestFileName = &fileName
 //				}
 //			}
 //		}
 //	}
-//	if closest_filename set
-//	return closest_filename
+//	if closestFileName != nil {
+//		return closestFileName
+//	}
 //	return nil
 //}
 //
@@ -114,7 +176,7 @@ package iconTheme
 //	return Size-Threshold <= iconsize <= Size+Threshold
 //}
 //
-//func DirectorySizeDistance(subDir string, iconSize float32, iconScale string) *string {
+//func DirectorySizeDistance(subDir string, iconSize float32, iconScale string) float64 {
 //	read
 //	Type
 //	and
@@ -191,5 +253,3 @@ package iconTheme
 //
 //	return nil
 //}
-//
-//

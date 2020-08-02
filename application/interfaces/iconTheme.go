@@ -9,6 +9,7 @@ type IconTheme struct {
 	Hidden            bool            `json:"hidden"`
 	Example           string          `json:"example"`
 	DirectoriesData   []IconDirectory `json:"directories"`
+	RootFolder        string          `json:"root_folder"`
 }
 
 type IconDirectory struct {
