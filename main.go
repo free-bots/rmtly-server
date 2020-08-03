@@ -3,13 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mdp/qrterminal/v3"
-	"image/png"
 	"log"
 	"net/http"
-	"os"
 	"rmtly-server/application/applicationUtils"
 	"rmtly-server/application/applicationUtils/parser/application"
+	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
 	"time"
 )
@@ -24,15 +22,22 @@ import (
 //                        |___/
 
 func main() {
-	fmt.Println("rmtly-server running...")
+	showBranding()
+	qrService.ShowQr("rmtly-server")
 
-	qrterminal.Generate("https://github.com/mdp/qrterminal", qrterminal.L, os.Stdout)
+	startInit()
 
-	image := applicationUtils.GetIcon("org.gnome.gedit")
+	//fmt.Println(services.GetConfig())
 
-	f, _ := os.Create("image.png")
-	_ = png.Encode(f, image)
+	startServer()
+}
 
+func startInit() {
+	applicationUtils.InitIconUtils()
+	//services.InitConfig()
+}
+
+func startServer() {
 	router := routers.RootRouter()
 
 	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
@@ -68,5 +73,16 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+}
 
+func showBranding() {
+	fmt.Println("rmtly-server running...")
+	fmt.Println("//                  _   _\n" +
+		"//                 | | | |\n" +
+		"//   _ __ _ __ ___ | |_| |_   _ ______ ___  ___ _ ____   _____ _ __\n" +
+		"//  | '__| '_ ` _ \\| __| | | | |______/ __|/ _ \\ '__\\ \\ / / _ \\ '__|\n" +
+		"//  | |  | | | | | | |_| | |_| |      \\__ \\  __/ |   \\ V /  __/ |\n" +
+		"//  |_|  |_| |_| |_|\\__|_|\\__, |      |___/\\___|_|    \\_/ \\___|_|\n" +
+		"//                         __/ |\n" +
+		"//                        |___/")
 }

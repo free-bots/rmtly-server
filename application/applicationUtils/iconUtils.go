@@ -14,8 +14,11 @@ const (
 	QUALITY = 512 // image size in pixel
 )
 
-func GetIcon(iconName string) *image.RGBA {
+func InitIconUtils() {
 	gtk.Init(nil)
+}
+
+func GetIcon(iconName string) *image.RGBA {
 
 	theme, err := gtk.IconThemeGetDefault()
 
