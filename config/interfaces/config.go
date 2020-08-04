@@ -1,5 +1,11 @@
 package interfaces
 
 type Config struct {
-	ImageQuality int `json:"imageQuality"`
+	ImageQuality int            `json:"imageQuality"`
+	Security     SecurityConfig `json:"security"`
+}
+
+type SecurityConfig struct {
+	ExpirationInDays int    `json:"expirationInDays"`
+	Secret           string `json:"secret"`
 }
