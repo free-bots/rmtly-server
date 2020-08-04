@@ -1,9 +1,8 @@
 package services
 
 import (
-	"bufio"
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -29,55 +28,64 @@ func InitConfig() {
 
 	_ = os.Mkdir(configDir, os.ModePerm)
 
-	file, err := os.Open(configFile)
-	if err != nil {
-		defaultConfig, err := os.Create(configFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		data, err := json.Marshal(getDefaultConfig())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = defaultConfig.Write(data)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if defaultConfig != nil {
-			_ = defaultConfig.Close()
-		}
+	if _, err := os.Stat(configFile); os.IsNotExist(err) {
+		createDefaultConfig()
 	}
 
-	if file != nil {
-		_ = file.Close()
-	}
+	readConfig()
 }
 
 func GetConfig() interfaces.Config {
 	if currentConfig == nil {
-		file, err := os.Open(configFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		reader := bufio.NewReader(file)
-
-		configDate := make([]byte, 1024)
-
-		_, err = reader.Read(configDate)
-
-		fmt.Println(err)
-		var config *interfaces.Config
-
-		_ = json.Unmarshal(configDate, config)
-
-		currentConfig = config
+		log.Fatal("try to init config first")
 	}
 
 	return *currentConfig
+}
+
+func createDefaultConfig() {
+	defaultConfig, err := os.Create(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data, err := json.Marshal(getDefaultConfig())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = defaultConfig.Write(data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if defaultConfig != nil {
+		_ = defaultConfig.Close()
+	}
+}
+
+func readConfig() {
+	file, err := os.Open(configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config := new(interfaces.Config)
+
+	if !json.Valid(data) {
+		log.Fatal("invalid config file format: use valid json")
+	}
+
+	err = json.Unmarshal(data, config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	currentConfig = config
 }
 
 func getDefaultConfig() interfaces.Config {

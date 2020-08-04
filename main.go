@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"rmtly-server/application/applicationUtils"
 	"rmtly-server/application/applicationUtils/parser/application"
+	configService "rmtly-server/config/services"
 	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
 	"time"
@@ -27,14 +28,14 @@ func main() {
 
 	startInit()
 
-	//fmt.Println(services.GetConfig())
+	fmt.Println(configService.GetConfig().ImageQuality)
 
 	startServer()
 }
 
 func startInit() {
 	applicationUtils.InitIconUtils()
-	//services.InitConfig()
+	configService.InitConfig()
 }
 
 func startServer() {
