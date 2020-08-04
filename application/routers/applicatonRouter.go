@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"rmtly-server/application/routers/routersUtil"
 	"rmtly-server/application/services"
 	notificationService "rmtly-server/notification/services"
+	"rmtly-server/routers/routersUtil"
 )
 
 const PREFIX = "/applications"
