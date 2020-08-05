@@ -10,6 +10,8 @@ import (
 	configService "rmtly-server/config/services"
 	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
+	"rmtly-server/security/interfaces"
+	"rmtly-server/security/services"
 	"time"
 )
 
@@ -27,6 +29,13 @@ func main() {
 	qrService.ShowQr("rmtly-server")
 
 	startInit()
+
+	token, err := services.CreateJwtToken(interfaces.SignUpRequest{DeviceId: time.Now().String(), QrCode: time.Now().String()})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(services.VerifyJwtToken(token))
 
 	fmt.Println(configService.GetConfig().ImageQuality)
 
