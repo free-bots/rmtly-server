@@ -1,16 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"rmtly-server/application/applicationUtils"
-	"rmtly-server/application/applicationUtils/parser/application"
 	configService "rmtly-server/config/services"
 	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
-	"rmtly-server/security/interfaces"
+	"rmtly-server/security/routers/routerUtils"
 	"rmtly-server/security/services"
 	"time"
 )
@@ -30,7 +28,7 @@ func main() {
 
 	startInit()
 
-	token, err := services.CreateJwtToken(interfaces.SignUpRequest{DeviceId: time.Now().String(), QrCode: time.Now().String()})
+	token, err := services.CreateJwtToken(time.Now().String())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,16 +49,12 @@ func startServer() {
 	router := routers.RootRouter()
 
 	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
+		err := routerUtils.AuthenticationMiddleWare(writer, request)
+		if err != nil {
+			return
+		}
 
-		const path = "./test.desktop"
-		applicationEntry := application.Parse(path, true)
-
-		//c := make(chan bool)
-		//go services.RunCommand(applicationEntry.Exec, c)
-		//
-		//fmt.Printf("running %s succesful %t", applicationEntry.Exec, <-c)
-		bytes, _ := json.Marshal(applicationEntry)
-		_, _ = writer.Write(bytes)
+		_, _ = writer.Write([]byte("authenticated"))
 		writer.WriteHeader(http.StatusOK)
 	})
 

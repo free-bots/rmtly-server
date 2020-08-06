@@ -10,13 +10,13 @@ import (
 
 var secret = []byte("sdfsf") // todo from keyfile or config
 
-func CreateJwtToken(signUpRequest interfaces.SignUpRequest) (token string, err error) {
+func CreateJwtToken(deviceId string) (token string, err error) {
 	expirationInDays := configService.GetConfig().Security.ExpirationInDays
 	expirationDate := time.Now().Add(24 * time.Hour * time.Duration(expirationInDays))
 	fmt.Println(expirationDate)
 
 	claims := &interfaces.Claims{
-		DeviceId: signUpRequest.DeviceId,
+		DeviceId: deviceId,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationDate.Unix(),
 		},

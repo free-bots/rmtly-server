@@ -21,20 +21,36 @@ func AuthenticationRouter(router *mux.Router) {
 
 		defer request.Body.Close()
 
-		signUpRequest := interfaces.SignUpRequest{}
+		signUpRequest := new(interfaces.SignUpRequest)
 		err := json.NewDecoder(request.Body).Decode(signUpRequest)
 
 		if err != nil {
+			fmt.Println(err)
 			writer.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
-		token, err := services.CreateJwtToken(signUpRequest)
+		if signUpRequest.QrCode != "authenticationCode" {
+			writer.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		token, err := services.CreateJwtToken(signUpRequest.DeviceId)
 
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 		}
 
-		_, _ = writer.Write([]byte(token))
+		response := new(interfaces.SignUpResponse)
+		response.Token = token
+
+		jsonData, err := json.Marshal(response)
+		if err != nil {
+			fmt.Println(err)
+			writer.WriteHeader(http.StatusBadRequest)
+		}
+
+		_, _ = writer.Write(jsonData)
 		writer.WriteHeader(http.StatusOK)
 
 	}).Methods(http.MethodPost)
