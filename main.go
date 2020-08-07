@@ -8,7 +8,6 @@ import (
 	configService "rmtly-server/config/services"
 	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
-	"rmtly-server/security/routers/routerUtils"
 	"rmtly-server/security/services"
 	"time"
 )
@@ -49,12 +48,8 @@ func startServer() {
 	router := routers.RootRouter()
 
 	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
-		err := routerUtils.AuthenticationMiddleWare(writer, request)
-		if err != nil {
-			return
-		}
 
-		_, _ = writer.Write([]byte("authenticated"))
+		_, _ = writer.Write([]byte("test"))
 		writer.WriteHeader(http.StatusOK)
 	})
 

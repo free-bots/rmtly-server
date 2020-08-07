@@ -7,12 +7,15 @@ import (
 	"rmtly-server/application/services"
 	notificationService "rmtly-server/notification/services"
 	"rmtly-server/routers/routersUtil"
+	"rmtly-server/security/routers/routerUtils"
 )
 
 const PREFIX = "/applications"
 
 func ApplicationRouter(router *mux.Router) {
 	subRouter := router.PathPrefix(PREFIX).Subrouter()
+
+	subRouter.Use(routerUtils.AuthorizationMiddleware)
 
 	subRouter.HandleFunc("", func(writer http.ResponseWriter, request *http.Request) {
 		routersUtil.MethodHandler(writer, request,
