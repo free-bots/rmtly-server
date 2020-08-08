@@ -6,9 +6,7 @@ import (
 	"net/http"
 	"rmtly-server/application/applicationUtils"
 	configService "rmtly-server/config/services"
-	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers"
-	"rmtly-server/security/services"
 	"time"
 )
 
@@ -23,19 +21,7 @@ import (
 
 func main() {
 	showBranding()
-	qrService.ShowQr("rmtly-server")
-
 	startInit()
-
-	token, err := services.CreateJwtToken(time.Now().String())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(services.VerifyJwtToken(token))
-
-	fmt.Println(configService.GetConfig().ImageQuality)
-
 	startServer()
 }
 
@@ -46,12 +32,6 @@ func startInit() {
 
 func startServer() {
 	router := routers.RootRouter()
-
-	router.HandleFunc("/test", func(writer http.ResponseWriter, request *http.Request) {
-
-		_, _ = writer.Write([]byte("test"))
-		writer.WriteHeader(http.StatusOK)
-	})
 
 	server := &http.Server{
 		Addr:              "0.0.0.0:3000",
@@ -75,7 +55,6 @@ func startServer() {
 }
 
 func showBranding() {
-	fmt.Println("rmtly-server running...")
 	fmt.Println("//                  _   _\n" +
 		"//                 | | | |\n" +
 		"//   _ __ _ __ ___ | |_| |_   _ ______ ___  ___ _ ____   _____ _ __\n" +
@@ -84,4 +63,5 @@ func showBranding() {
 		"//  |_|  |_| |_| |_|\\__|_|\\__, |      |___/\\___|_|    \\_/ \\___|_|\n" +
 		"//                         __/ |\n" +
 		"//                        |___/")
+	fmt.Println("rmtly-server running...")
 }
