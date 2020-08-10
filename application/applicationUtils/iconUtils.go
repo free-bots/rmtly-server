@@ -8,6 +8,8 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"os"
+	"strings"
 )
 
 const (
@@ -16,6 +18,49 @@ const (
 
 func InitIconUtils() {
 	gtk.Init(nil)
+}
+
+func GetIconBase64(iconName string) *string {
+	var icon image.Image
+
+	if strings.Index(iconName, string(os.PathSeparator)) >= 0 {
+
+		fileInfo, err := os.Stat(iconName)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		if fileInfo.IsDir() {
+			fmt.Println("path is directory")
+			return nil
+		}
+
+		file, err := os.Open(iconName)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		fileImage, format, err := image.Decode(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(format)
+
+		icon = fileImage
+
+	} else {
+		icon = GetIcon(iconName)
+	}
+
+	if icon == nil {
+		return nil
+	}
+
+	base64Icon := ImageToBase64(icon)
+
+	return &base64Icon
 }
 
 func GetIcon(iconName string) *image.RGBA {

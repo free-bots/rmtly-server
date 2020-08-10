@@ -13,6 +13,7 @@ import (
 )
 
 const XdgDataDirs = "XDG_DATA_DIRS"
+const LocalDir = "~/.local/share/"
 const ApplicationDirName = "applications"
 
 func GetApplications() []*interfaces.ApplicationEntry {
@@ -115,19 +116,23 @@ func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
 		return response
 	}
 
-	// todo check if application is path
-
-	icon := applicationUtils.GetIcon(application.Icon)
+	icon := applicationUtils.GetIconBase64(application.Icon)
 
 	if icon == nil {
 		return response
 	}
 
-	response.IconBase64 = applicationUtils.ImageToBase64(icon)
+	response.IconBase64 = *icon
 	return response
 }
 
 func getApplicationPaths() []string {
 	applicationPaths := os.Getenv(XdgDataDirs)
-	return strings.Split(applicationPaths, ":")
+	paths := strings.Split(applicationPaths, ":")
+
+	if strings.Index(applicationPaths, LocalDir) >= 0 {
+		paths = append(paths, LocalDir)
+	}
+
+	return append(paths)
 }
