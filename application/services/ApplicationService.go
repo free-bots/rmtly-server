@@ -5,31 +5,54 @@ import (
 	"github.com/google/shlex"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"rmtly-server/application/applicationUtils"
 	application2 "rmtly-server/application/applicationUtils/parser/application"
 	"rmtly-server/application/interfaces"
+	"strings"
 )
 
-const DefaultPath = "/usr/share/applications"
+const XdgDataDirs = "XDG_DATA_DIRS"
+const ApplicationDirName = "applications"
 
 func GetApplications() []*interfaces.ApplicationEntry {
 	applications := make([]*interfaces.ApplicationEntry, 0)
 
-	file, err := os.Open(DefaultPath)
+	for _, path := range getApplicationPaths() {
 
-	if err != nil {
-		return nil
-	}
+		path = filepath.Join(path, ApplicationDirName)
 
-	fileNames, err := file.Readdirnames(0)
+		fileInfo, err := os.Stat(path)
 
-	if err != nil {
-		return nil
-	}
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
 
-	for _, name := range fileNames {
-		application := application2.Parse(DefaultPath+string(os.PathSeparator)+name, true)
-		applications = append(applications, application)
+		if !fileInfo.IsDir() {
+			continue
+		}
+
+		file, err := os.Open(path)
+
+		if err != nil {
+			return nil
+		}
+
+		fileNames, err := file.Readdirnames(0)
+
+		if err != nil {
+			return nil
+		}
+
+		for _, name := range fileNames {
+			application := application2.Parse(filepath.Join(path, name), true)
+			if application == nil {
+				continue
+			}
+			applications = append(applications, application)
+		}
+
 	}
 
 	return applications
@@ -102,4 +125,9 @@ func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
 
 	response.IconBase64 = applicationUtils.ImageToBase64(icon)
 	return response
+}
+
+func getApplicationPaths() []string {
+	applicationPaths := os.Getenv(XdgDataDirs)
+	return strings.Split(applicationPaths, ":")
 }
