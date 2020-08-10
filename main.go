@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"rmtly-server/application/applicationUtils"
+	"rmtly-server/config/interfaces"
 	configService "rmtly-server/config/services"
 	"rmtly-server/routers"
 	"time"
@@ -22,7 +23,8 @@ import (
 func main() {
 	showBranding()
 	startInit()
-	startServer()
+	config := configService.GetConfig()
+	startServer(config)
 }
 
 func startInit() {
@@ -30,11 +32,11 @@ func startInit() {
 	configService.InitConfig()
 }
 
-func startServer() {
+func startServer(config interfaces.Config) {
 	router := routers.RootRouter()
 
 	server := &http.Server{
-		Addr:              "0.0.0.0:3000",
+		Addr:              config.Network.Address,
 		Handler:           router,
 		TLSConfig:         nil,
 		ReadTimeout:       0,

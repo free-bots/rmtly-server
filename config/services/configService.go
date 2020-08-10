@@ -92,6 +92,7 @@ func getDefaultConfig() interfaces.Config {
 	config := new(interfaces.Config)
 
 	config.ImageQuality = 512
+	config.Network.Address = "0.0.0.0:3000"
 
 	return *config
 }
