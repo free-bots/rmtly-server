@@ -17,9 +17,29 @@ func ApplicationRouter(router *mux.Router) {
 
 	subRouter.Use(routerUtils.AuthorizationMiddleware)
 
+	subRouter.Queries("sortedBy", "{*}").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		routersUtil.ContentTypeJson(writer)
+		sortedBy := request.FormValue("sortedBy")
+		if sortedBy == "" {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		sortedResponse := services.GetApplicationsSortedBy(sortedBy)
+		bytes, err := json.Marshal(sortedResponse)
+		if err != nil {
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+		_, _ = writer.Write(bytes)
+
+		writer.WriteHeader(http.StatusOK)
+
+	}).Methods(http.MethodGet)
+
 	subRouter.HandleFunc("", func(writer http.ResponseWriter, request *http.Request) {
 		routersUtil.MethodHandler(writer, request,
 			func(writer http.ResponseWriter, request *http.Request) {
+				routersUtil.ContentTypeJson(writer)
 
 				applications := services.GetApplications()
 
@@ -28,8 +48,6 @@ func ApplicationRouter(router *mux.Router) {
 					writer.WriteHeader(http.StatusBadRequest)
 					return
 				}
-
-				routersUtil.ContentTypeJson(writer)
 
 				_, _ = writer.Write(bytes)
 

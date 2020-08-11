@@ -78,6 +78,39 @@ func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
 	return nil
 }
 
+func GetApplicationsSortedBy(sortKey string) *interfaces.SortedApplicationResponse {
+	applications := GetApplications()
+
+	switch sortKey {
+	case "category":
+		categoryMap := make(map[string][]*interfaces.ApplicationEntry)
+		for _, application := range applications {
+			for _, category := range application.Categories {
+				mapValue, exists := categoryMap[category]
+				if !exists {
+					mapValue = make([]*interfaces.ApplicationEntry, 0)
+				}
+				categoryMap[category] = append(mapValue, application)
+			}
+		}
+
+		sortedResponse := new(interfaces.SortedApplicationResponse)
+		sortedResponse.SortedBy = sortKey
+		for key, value := range categoryMap {
+			sortedItem := new(interfaces.SortedValue)
+			sortedItem.SortedValue = key
+			sortedItem.ApplicationEntries = value
+
+			sortedResponse.Values = append(sortedResponse.Values, *sortedItem)
+		}
+
+		return sortedResponse
+	default:
+		fmt.Println("key not found")
+		return nil
+	}
+}
+
 func RunCommand(command string, c chan bool) {
 	args, err := shlex.Split(command)
 	if err != nil {
