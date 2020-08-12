@@ -14,8 +14,6 @@ func AuthorizationMiddleware(handler http.Handler) http.Handler {
 
 		tokenArray := strings.Split(bearerToken, " ")
 
-		fmt.Println(tokenArray)
-
 		if len(tokenArray) <= 1 || tokenArray[0] != "Bearer" || tokenArray[1] == "" {
 			writer.WriteHeader(http.StatusUnauthorized)
 			http.Error(writer, "Authorization header missing or invalid", http.StatusUnauthorized)

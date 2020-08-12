@@ -42,11 +42,10 @@ func GetIconBase64(iconName string) *string {
 			return nil
 		}
 
-		fileImage, format, err := image.Decode(file)
+		fileImage, _, err := image.Decode(file)
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println(format)
 
 		icon = fileImage
 

@@ -13,7 +13,6 @@ var secret = []byte("sdfsf") // todo from keyfile or config
 func CreateJwtToken(deviceId string) (token string, err error) {
 	expirationInDays := configService.GetConfig().Security.ExpirationInDays
 	expirationDate := time.Now().Add(24 * time.Hour * time.Duration(expirationInDays))
-	fmt.Println(expirationDate)
 
 	claims := &interfaces.Claims{
 		DeviceId: deviceId,
@@ -36,7 +35,7 @@ func CreateJwtToken(deviceId string) (token string, err error) {
 func VerifyJwtToken(signedToken string) (deviceId string, err error) {
 	claims := &interfaces.Claims{}
 
-	token, err := jwt.ParseWithClaims(signedToken, claims, func(token *jwt.Token) (i interface{}, err error) {
+	_, err = jwt.ParseWithClaims(signedToken, claims, func(token *jwt.Token) (i interface{}, err error) {
 		return secret, nil
 	})
 
@@ -44,6 +43,5 @@ func VerifyJwtToken(signedToken string) (deviceId string, err error) {
 		return "", err
 	}
 
-	fmt.Println(token)
 	return claims.DeviceId, nil
 }

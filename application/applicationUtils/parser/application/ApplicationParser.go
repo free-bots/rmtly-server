@@ -76,12 +76,11 @@ func isLineDesktopAction(line string) bool {
 		log.Fatal(err)
 		return false
 	}
-	// todo check with regex
+
 	return matched
 }
 
 func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.ApplicationEntry, *string) {
-	fmt.Println("using entry parser")
 
 	entry := new(interfaces.ApplicationEntry)
 
@@ -141,11 +140,9 @@ func parseEntry(scanner *bufio.Scanner, removeExecFields bool) (*interfaces.Appl
 					entry.Categories = parser.GetSemicolonList(value)
 				}
 			})
-
-			//fmt.Printf("line %s ignored\n", line)
-
 		}
 	}
+
 	return entry, nil
 }
 
@@ -192,7 +189,6 @@ func parseGroup(scanner *bufio.Scanner, removeExecFields bool, line string, appl
 	}
 
 	if isLineDesktopAction(line) {
-		fmt.Println("action")
 		var newAction, stopLine = parseAction(scanner, removeExecFields)
 		if newAction != nil {
 			actions = append(actions, newAction)
