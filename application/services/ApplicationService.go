@@ -9,14 +9,30 @@ import (
 	"rmtly-server/application/applicationUtils"
 	application2 "rmtly-server/application/applicationUtils/parser/application"
 	"rmtly-server/application/interfaces"
+	configService "rmtly-server/config/services"
 	"strings"
+	"time"
 )
 
 const XdgDataDirs = "XDG_DATA_DIRS"
 const LocalDir = "~/.local/share/"
 const ApplicationDirName = "applications"
 
+// cache
+// application
+var cachedApplications []*interfaces.ApplicationEntry
+var lastApplicationCacheRefresh time.Time = time.Now()
+
+// icons
+var cachedImages map[string]interfaces.IconResponse
+var lastIconCacheRefresh = time.Now()
+
 func GetApplications() []*interfaces.ApplicationEntry {
+
+	if !applicationCacheExpired() && cachedApplications != nil {
+		return cachedApplications
+	}
+
 	applications := make([]*interfaces.ApplicationEntry, 0)
 
 	for _, path := range getApplicationPaths() {
@@ -55,6 +71,8 @@ func GetApplications() []*interfaces.ApplicationEntry {
 		}
 
 	}
+
+	refreshApplicationCache(applications)
 
 	return applications
 }
@@ -140,13 +158,18 @@ func RunCommand(command string, c chan bool) {
 
 func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
 
+	if !iconCacheExpired() && cachedImages != nil && iconCacheContains(applicationId) {
+		value, _ := cachedImages[applicationId]
+		return &value
+	}
+
 	response := new(interfaces.IconResponse)
 	response.ApplicationId = applicationId
 
 	application := GetApplicationById(applicationId)
 
 	if application == nil {
-		return response
+		return nil
 	}
 
 	icon := applicationUtils.GetIconBase64(application.Icon)
@@ -156,6 +179,9 @@ func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
 	}
 
 	response.IconBase64 = *icon
+
+	refreshIconCache(*response)
+
 	return response
 }
 
@@ -168,4 +194,47 @@ func getApplicationPaths() []string {
 	}
 
 	return append(paths)
+}
+
+func applicationCacheExpired() bool {
+	cacheDuration := configService.GetConfig().Application.CacheExpiresInMillis
+
+	return cacheExpired(lastApplicationCacheRefresh, cacheDuration)
+}
+
+func refreshApplicationCache(applications []*interfaces.ApplicationEntry) {
+	cachedApplications = applications
+	lastApplicationCacheRefresh = time.Now()
+}
+
+func iconCacheExpired() bool {
+	cacheDuration := configService.GetConfig().Image.CacheExpiresInMillis
+
+	return cacheExpired(lastIconCacheRefresh, cacheDuration)
+}
+
+func refreshIconCache(icon interfaces.IconResponse) {
+
+	if cachedImages == nil {
+		cachedImages = make(map[string]interfaces.IconResponse)
+	}
+
+	if len(cachedImages) > configService.GetConfig().Image.MaxImagesInCache {
+		cachedImages = nil
+		cachedImages = make(map[string]interfaces.IconResponse)
+	}
+
+	cachedImages[icon.ApplicationId] = icon
+	lastIconCacheRefresh = time.Now()
+}
+
+func iconCacheContains(applicationId string) bool {
+	_, exists := cachedImages[applicationId]
+	return exists
+}
+
+func cacheExpired(currentCacheTime time.Time, configDifference int) bool {
+	timeDuration := time.Now().Sub(currentCacheTime).Milliseconds()
+
+	return timeDuration > int64(configDifference)
 }

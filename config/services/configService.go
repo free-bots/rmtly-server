@@ -91,8 +91,20 @@ func readConfig() {
 func getDefaultConfig() interfaces.Config {
 	config := new(interfaces.Config)
 
-	config.ImageQuality = 512
+	// image config
+	config.Image.CacheExpiresInMillis = 10000
+	config.Image.MaxImagesInCache = 100
+	config.Image.ImageQuality = 512
+
+	// application config
+	config.Application.CacheExpiresInMillis = 10000
+
+	// network config
 	config.Network.Address = "0.0.0.0:3000"
+
+	// security config
+	config.Security.ExpirationInDays = 99
+	config.Security.Secret = "authenticationCode"
 
 	return *config
 }

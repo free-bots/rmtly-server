@@ -1,9 +1,10 @@
 package interfaces
 
 type Config struct {
-	ImageQuality int            `json:"imageQuality"`
-	Security     SecurityConfig `json:"security"`
-	Network      NetworkConfig  `json:"network"`
+	Application ApplicationConfig `json:"application"`
+	Image       ImageConfig       `json:"image"`
+	Security    SecurityConfig    `json:"security"`
+	Network     NetworkConfig     `json:"network"`
 }
 
 type SecurityConfig struct {
@@ -14,4 +15,14 @@ type SecurityConfig struct {
 
 type NetworkConfig struct {
 	Address string `json:"address"`
+}
+
+type ApplicationConfig struct {
+	CacheExpiresInMillis int `json:"cacheExpiresInMillis"`
+}
+
+type ImageConfig struct {
+	CacheExpiresInMillis int `json:"cacheExpiresInMillis"`
+	MaxImagesInCache     int `json:"maxImagesInCache"`
+	ImageQuality         int `json:"imageQuality"`
 }
