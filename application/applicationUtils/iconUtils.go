@@ -21,7 +21,7 @@ func InitIconUtils() {
 }
 
 func GetIconBase64(iconName string) *string {
-	var icon image.Image
+	var icon *image.Image
 
 	if strings.Index(iconName, string(os.PathSeparator)) >= 0 {
 
@@ -45,9 +45,10 @@ func GetIconBase64(iconName string) *string {
 		fileImage, _, err := image.Decode(file)
 		if err != nil {
 			fmt.Println(err)
+			return nil
 		}
 
-		icon = fileImage
+		icon = &fileImage
 
 	} else {
 		icon = GetIcon(iconName)
@@ -57,12 +58,12 @@ func GetIconBase64(iconName string) *string {
 		return nil
 	}
 
-	base64Icon := ImageToBase64(icon)
+	base64Icon := ImageToBase64(*icon)
 
-	return &base64Icon
+	return base64Icon
 }
 
-func GetIcon(iconName string) *image.RGBA {
+func GetIcon(iconName string) *image.Image {
 
 	theme, err := gtk.IconThemeGetDefault()
 
@@ -101,20 +102,24 @@ func GetIcon(iconName string) *image.RGBA {
 		}
 	}
 
-	return iconImage
+	subImage := iconImage.SubImage(iconImage.Bounds())
+	return &subImage
 }
 
-func ImageToBase64(image image.Image) string {
+func ImageToBase64(image image.Image) *string {
+
 	imageBuffer := bytes.Buffer{}
 
 	err := png.Encode(&imageBuffer, image)
 
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return nil
 	}
 
 	encodedString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
 
-	return "data:image/png;base64," + encodedString
+	withType := "data:image/png;base64," + encodedString
+
+	return &withType
 }

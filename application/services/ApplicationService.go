@@ -21,13 +21,13 @@ const ApplicationDirName = "applications"
 // cache
 // application
 var cachedApplications []*interfaces.ApplicationEntry
-var lastApplicationCacheRefresh time.Time = time.Now()
+var lastApplicationCacheRefresh = time.Now()
 
 // icons
 var cachedImages map[string]interfaces.IconResponse
 var lastIconCacheRefresh = time.Now()
 
-func GetApplications() []*interfaces.ApplicationEntry {
+func GetApplications(mergedWithBase64Icon bool) []*interfaces.ApplicationEntry {
 
 	if !applicationCacheExpired() && cachedApplications != nil {
 		return cachedApplications
@@ -67,6 +67,11 @@ func GetApplications() []*interfaces.ApplicationEntry {
 			if application == nil {
 				continue
 			}
+
+			if mergedWithBase64Icon {
+				application = mergeWithIcon(application)
+			}
+
 			applications = append(applications, application)
 		}
 
@@ -77,8 +82,8 @@ func GetApplications() []*interfaces.ApplicationEntry {
 	return applications
 }
 
-func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
-	applications := GetApplications()
+func GetApplicationById(applicationId string, mergeWithBase64Icon bool) *interfaces.ApplicationEntry {
+	applications := GetApplications(mergeWithBase64Icon)
 	if applications == nil {
 		return nil
 	}
@@ -96,8 +101,18 @@ func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
 	return nil
 }
 
+func mergeWithIcon(application *interfaces.ApplicationEntry) *interfaces.ApplicationEntry {
+	icon := applicationUtils.GetIconBase64(application.Icon)
+	if icon != nil {
+		application.Icon = *icon
+	} else {
+		application.Icon = ""
+	}
+	return application
+}
+
 func GetApplicationsSortedBy(sortKey string) *interfaces.SortedApplicationResponse {
-	applications := GetApplications()
+	applications := GetApplications(false)
 
 	switch sortKey {
 	case "category":
@@ -166,7 +181,7 @@ func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
 	response := new(interfaces.IconResponse)
 	response.ApplicationId = applicationId
 
-	application := GetApplicationById(applicationId)
+	application := GetApplicationById(applicationId, false)
 
 	if application == nil {
 		return nil

@@ -8,6 +8,7 @@ import (
 	notificationService "rmtly-server/notification/services"
 	"rmtly-server/routers/routersUtil"
 	"rmtly-server/security/routers/routerUtils"
+	"strconv"
 )
 
 const PREFIX = "/applications"
@@ -41,7 +42,11 @@ func ApplicationRouter(router *mux.Router) {
 			func(writer http.ResponseWriter, request *http.Request) {
 				routersUtil.ContentTypeJson(writer)
 
-				applications := services.GetApplications()
+				icon, _ := strconv.ParseBool(request.FormValue("icon"))
+
+				applications := services.GetApplications(icon)
+
+				// todo if query icon -> merge icon
 
 				bytes, err := json.Marshal(applications)
 				if err != nil {
@@ -64,7 +69,9 @@ func ApplicationRouter(router *mux.Router) {
 
 	subRouter.HandleFunc("/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
-		application := services.GetApplicationById(vars["applicationId"])
+		icon, _ := strconv.ParseBool(request.FormValue("icon"))
+		application := services.GetApplicationById(vars["applicationId"], icon)
+		// if query icon -> merge icon
 		bytes, err := json.Marshal(application)
 		if err != nil || application == nil {
 			writer.WriteHeader(http.StatusNotFound)
@@ -94,7 +101,8 @@ func ApplicationRouter(router *mux.Router) {
 
 	subRouter.HandleFunc("/run/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
-		application := services.GetApplicationById(vars["applicationId"])
+		icon, _ := strconv.ParseBool(request.FormValue("icon"))
+		application := services.GetApplicationById(vars["applicationId"], icon)
 		bytes, err := json.Marshal(application)
 		if err != nil || application == nil {
 			writer.WriteHeader(http.StatusNotFound)
