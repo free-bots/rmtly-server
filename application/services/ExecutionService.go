@@ -7,13 +7,19 @@ import (
 	"rmtly-server/application/interfaces"
 	"rmtly-server/application/repositories"
 	notificationService "rmtly-server/notification/services"
+	"time"
 )
 
-func Execute(applicationId string) *interfaces.ExecuteResponse {
+func Execute(applicationId string, request interfaces.ExecuteRequest) *interfaces.ExecuteResponse {
 	application := repositories.FindById(applicationId)
 
 	c := make(chan bool)
-	go runCommand(application.Exec, c)
+	go func() {
+		if request.ExecuteDelay > 0 {
+			time.Sleep(time.Duration(request.ExecuteDelay) * time.Millisecond)
+		}
+		runCommand(application.Exec, c)
+	}()
 	notificationService.SendAsync(application.Name, "executed by rmtly-server")
 
 	response := new(interfaces.ExecuteResponse)

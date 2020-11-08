@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/handlers"
 	"log"
 	"net/http"
 	"rmtly-server/application/applicationUtils"
@@ -35,9 +36,19 @@ func startInit() {
 func startServer(config interfaces.Config) {
 	router := routers.RootRouter()
 
+	handler := handlers.CORS(
+		handlers.AllowedHeaders([]string{
+			"Accept",
+			"Accept-Language",
+			"Content-Type",
+			"Content-Language",
+			"Origin",
+		}),
+	)(router)
+
 	server := &http.Server{
 		Addr:              config.Network.Address,
-		Handler:           router,
+		Handler:           handler,
 		TLSConfig:         nil,
 		ReadTimeout:       0,
 		ReadHeaderTimeout: time.Second * 150,

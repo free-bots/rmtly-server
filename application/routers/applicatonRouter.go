@@ -2,8 +2,10 @@ package routers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	"rmtly-server/application/interfaces"
 	"rmtly-server/application/services"
 	"rmtly-server/routers/routersUtil"
 	"strconv"
@@ -93,21 +95,44 @@ func ApplicationRouter(router *mux.Router) {
 	}).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/{applicationId}/execute", func(writer http.ResponseWriter, request *http.Request) {
-		applicationId := getApplicationId(request)
+		routersUtil.MethodHandler(writer, request,
+			func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				applicationId := getApplicationId(request)
 
-		response := services.Execute(applicationId)
+				defer func() {
+					_ = request.Body.Close()
+				}()
 
-		bytes, err := json.Marshal(response)
-		if err != nil {
-			writer.WriteHeader(http.StatusNotFound)
-			return
-		}
+				executeRequest := new(interfaces.ExecuteRequest)
+				err := json.NewDecoder(request.Body).Decode(executeRequest)
 
-		routersUtil.ContentTypeJson(writer)
+				if err != nil {
+					fmt.Println(err)
+					writer.WriteHeader(http.StatusInternalServerError)
+					return
+				}
 
-		_, _ = writer.Write(bytes)
+				response := services.Execute(applicationId, *executeRequest)
 
-		writer.WriteHeader(http.StatusOK)
+				bytes, err := json.Marshal(response)
+				if err != nil {
+					writer.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				routersUtil.ContentTypeJson(writer)
+
+				_, _ = writer.Write(bytes)
+
+				writer.WriteHeader(http.StatusOK)
+
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			}, func(writer http.ResponseWriter, request *http.Request) {
+				writer.WriteHeader(http.StatusForbidden)
+			})
 	})
 }
 
