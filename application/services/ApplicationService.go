@@ -1,22 +1,14 @@
 package services
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/google/shlex"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"rmtly-server/application/applicationUtils"
-	application2 "rmtly-server/application/applicationUtils/parser/application"
 	"rmtly-server/application/interfaces"
+	"rmtly-server/application/repositories"
 	configService "rmtly-server/config/services"
-	"strings"
 	"time"
 )
-
-const XdgDataDirs = "XDG_DATA_DIRS"
-const LocalDir = "~/.local/share/"
-const ApplicationDirName = "applications"
 
 // cache
 // application
@@ -27,92 +19,16 @@ var lastApplicationCacheRefresh = time.Now()
 var cachedImages map[string]interfaces.IconResponse
 var lastIconCacheRefresh = time.Now()
 
-func GetApplications(mergedWithBase64Icon bool) []*interfaces.ApplicationEntry {
-
-	if !applicationCacheExpired() && cachedApplications != nil {
-		return cachedApplications
-	}
-
-	applications := make([]*interfaces.ApplicationEntry, 0)
-
-	for _, path := range getApplicationPaths() {
-
-		path = filepath.Join(path, ApplicationDirName)
-
-		fileInfo, err := os.Stat(path)
-
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		if !fileInfo.IsDir() {
-			continue
-		}
-
-		file, err := os.Open(path)
-
-		if err != nil {
-			return nil
-		}
-
-		fileNames, err := file.Readdirnames(0)
-
-		if err != nil {
-			return nil
-		}
-
-		for _, name := range fileNames {
-			application := application2.Parse(filepath.Join(path, name), true)
-			if application == nil {
-				continue
-			}
-
-			if mergedWithBase64Icon {
-				application = mergeWithIcon(application)
-			}
-
-			applications = append(applications, application)
-		}
-
-	}
-
-	refreshApplicationCache(applications)
-
-	return applications
+func GetApplications() []*interfaces.ApplicationEntry {
+	return repositories.FindAll()
 }
 
-func GetApplicationById(applicationId string, mergeWithBase64Icon bool) *interfaces.ApplicationEntry {
-	applications := GetApplications(mergeWithBase64Icon)
-	if applications == nil {
-		return nil
-	}
-
-	for _, application := range applications {
-		if application == nil {
-			continue
-		}
-
-		if application.Id == applicationId {
-			return application
-		}
-	}
-
-	return nil
-}
-
-func mergeWithIcon(application *interfaces.ApplicationEntry) *interfaces.ApplicationEntry {
-	icon := applicationUtils.GetIconBase64(application.Icon)
-	if icon != nil {
-		application.Icon = *icon
-	} else {
-		application.Icon = ""
-	}
-	return application
+func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
+	return repositories.FindById(applicationId)
 }
 
 func GetApplicationsSortedBy(sortKey string) *interfaces.SortedApplicationResponse {
-	applications := GetApplications(false)
+	applications := GetApplications()
 
 	switch sortKey {
 	case "category":
@@ -144,71 +60,15 @@ func GetApplicationsSortedBy(sortKey string) *interfaces.SortedApplicationRespon
 	}
 }
 
-func RunCommand(command string, c chan bool) {
-	args, err := shlex.Split(command)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if args == nil || len(args) == 0 {
-		c <- false
-		return
-	}
-
-	if len(args) > 1 {
-		err = exec.Command(args[0], args[1:]...).Run()
-	} else if len(args) == 1 {
-		err = exec.Command(args[0]).Run()
-	}
-
-	if err != nil {
-		fmt.Println(err)
-		c <- false
-		return
-	}
-
-	c <- true
-}
-
-func GetIconOfApplication(applicationId string) *interfaces.IconResponse {
-
-	if !iconCacheExpired() && cachedImages != nil && iconCacheContains(applicationId) {
-		value, _ := cachedImages[applicationId]
-		return &value
-	}
-
-	response := new(interfaces.IconResponse)
-	response.ApplicationId = applicationId
-
-	application := GetApplicationById(applicationId, false)
+func GetApplicationIcon(applicationId string) *bytes.Buffer {
+	application := GetApplicationById(applicationId)
 
 	if application == nil {
 		return nil
 	}
 
-	icon := applicationUtils.GetIconBase64(application.Icon)
-
-	if icon == nil {
-		return response
-	}
-
-	response.IconBase64 = *icon
-
-	refreshIconCache(*response)
-
-	return response
-}
-
-func getApplicationPaths() []string {
-	applicationPaths := os.Getenv(XdgDataDirs)
-	paths := strings.Split(applicationPaths, ":")
-
-	if strings.Index(applicationPaths, LocalDir) >= 0 {
-		paths = append(paths, LocalDir)
-	}
-
-	return append(paths)
+	icon := applicationUtils.GetIconBuffer(application.Icon)
+	return icon
 }
 
 func applicationCacheExpired() bool {

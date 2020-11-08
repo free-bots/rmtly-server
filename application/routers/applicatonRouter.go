@@ -5,9 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"rmtly-server/application/services"
-	notificationService "rmtly-server/notification/services"
 	"rmtly-server/routers/routersUtil"
-	"rmtly-server/security/routers/routerUtils"
 	"strconv"
 )
 
@@ -16,7 +14,7 @@ const PREFIX = "/applications"
 func ApplicationRouter(router *mux.Router) {
 	subRouter := router.PathPrefix(PREFIX).Subrouter()
 
-	subRouter.Use(routerUtils.AuthorizationMiddleware)
+	//subRouter.Use(routerUtils.AuthorizationMiddleware)
 
 	subRouter.Queries("sortedBy", "{*}").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		routersUtil.ContentTypeJson(writer)
@@ -42,11 +40,7 @@ func ApplicationRouter(router *mux.Router) {
 			func(writer http.ResponseWriter, request *http.Request) {
 				routersUtil.ContentTypeJson(writer)
 
-				icon, _ := strconv.ParseBool(request.FormValue("icon"))
-
-				applications := services.GetApplications(icon)
-
-				// todo if query icon -> merge icon
+				applications := services.GetApplications()
 
 				bytes, err := json.Marshal(applications)
 				if err != nil {
@@ -68,10 +62,9 @@ func ApplicationRouter(router *mux.Router) {
 	})
 
 	subRouter.HandleFunc("/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
-		vars := mux.Vars(request)
-		icon, _ := strconv.ParseBool(request.FormValue("icon"))
-		application := services.GetApplicationById(vars["applicationId"], icon)
-		// if query icon -> merge icon
+		applicationId := getApplicationId(request)
+		application := services.GetApplicationById(applicationId)
+
 		bytes, err := json.Marshal(application)
 		if err != nil || application == nil {
 			writer.WriteHeader(http.StatusNotFound)
@@ -85,26 +78,27 @@ func ApplicationRouter(router *mux.Router) {
 	}).Methods(http.MethodGet)
 
 	subRouter.HandleFunc("/{applicationId}/icon", func(writer http.ResponseWriter, request *http.Request) {
-		vars := mux.Vars(request)
-		icon := services.GetIconOfApplication(vars["applicationId"])
-		bytes, err := json.Marshal(icon)
-		if err != nil || icon == nil {
+		applicationId := getApplicationId(request)
+
+		iconBuffer := services.GetApplicationIcon(applicationId)
+		if iconBuffer == nil {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		routersUtil.ContentTypeJson(writer)
-
-		_, _ = writer.Write(bytes)
+		writer.Header().Set("Content-Type", "image/png")
+		writer.Header().Set("Content-Length", strconv.Itoa(len(iconBuffer.Bytes())))
+		_, _ = writer.Write(iconBuffer.Bytes())
 		writer.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 
-	subRouter.HandleFunc("/run/{applicationId}", func(writer http.ResponseWriter, request *http.Request) {
-		vars := mux.Vars(request)
-		icon, _ := strconv.ParseBool(request.FormValue("icon"))
-		application := services.GetApplicationById(vars["applicationId"], icon)
-		bytes, err := json.Marshal(application)
-		if err != nil || application == nil {
+	subRouter.HandleFunc("/{applicationId}/execute", func(writer http.ResponseWriter, request *http.Request) {
+		applicationId := getApplicationId(request)
+
+		response := services.Execute(applicationId)
+
+		bytes, err := json.Marshal(response)
+		if err != nil {
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -114,9 +108,10 @@ func ApplicationRouter(router *mux.Router) {
 		_, _ = writer.Write(bytes)
 
 		writer.WriteHeader(http.StatusOK)
-
-		c := make(chan bool)
-		go services.RunCommand(application.Exec, c)
-		notificationService.SendAsync(application.Name, "executed by rmtly-server")
 	})
+}
+
+func getApplicationId(request *http.Request) string {
+	vars := mux.Vars(request)
+	return vars["applicationId"]
 }

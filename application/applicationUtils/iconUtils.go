@@ -21,38 +21,7 @@ func InitIconUtils() {
 }
 
 func GetIconBase64(iconName string) *string {
-	var icon *image.Image
-
-	if strings.Index(iconName, string(os.PathSeparator)) >= 0 {
-
-		fileInfo, err := os.Stat(iconName)
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-
-		if fileInfo.IsDir() {
-			fmt.Println("path is directory")
-			return nil
-		}
-
-		file, err := os.Open(iconName)
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-
-		fileImage, _, err := image.Decode(file)
-		if err != nil {
-			fmt.Println(err)
-			return nil
-		}
-
-		icon = &fileImage
-
-	} else {
-		icon = GetIcon(iconName)
-	}
+	icon := getIcon(iconName)
 
 	if icon == nil {
 		return nil
@@ -63,7 +32,26 @@ func GetIconBase64(iconName string) *string {
 	return base64Icon
 }
 
-func GetIcon(iconName string) *image.Image {
+func GetIconBuffer(iconName string) *bytes.Buffer {
+	icon := getIcon(iconName)
+
+	if icon == nil {
+		return nil
+	}
+
+	imageBuffer := new(bytes.Buffer)
+
+	err := png.Encode(imageBuffer, *icon)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return imageBuffer
+}
+
+func GetGtkIcon(iconName string) *image.Image {
 
 	theme, err := gtk.IconThemeGetDefault()
 
@@ -122,4 +110,58 @@ func ImageToBase64(image image.Image) *string {
 	withType := "data:image/png;base64," + encodedString
 
 	return &withType
+}
+
+func isIconNameFilePath(iconName string) bool {
+	return strings.Index(iconName, string(os.PathSeparator)) >= 0
+}
+
+func getIconFile(iconName string) (*os.File, error) {
+	fileInfo, err := os.Stat(iconName)
+	if err != nil {
+		return nil, err
+	}
+
+	if fileInfo.IsDir() {
+		return nil, fmt.Errorf("icon path is a directory")
+	}
+
+	file, err := os.Open(iconName)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, err
+}
+
+func getIcon(iconName string) *image.Image {
+	var icon *image.Image
+
+	if isIconNameFilePath(iconName) {
+
+		file, err := getIconFile(iconName)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		defer func() {
+			if file != nil {
+				_ = file.Close()
+			}
+		}()
+
+		fileImage, _, err := image.Decode(file)
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		icon = &fileImage
+
+	} else {
+		icon = GetGtkIcon(iconName)
+	}
+
+	return icon
 }

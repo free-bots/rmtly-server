@@ -14,3 +14,7 @@ type SortedValue struct {
 	SortedValue        string              `json:"sortedValue"`
 	ApplicationEntries []*ApplicationEntry `json:"applicationEntries"`
 }
+
+type ExecuteResponse struct {
+	Application *ApplicationEntry `json:"application"`
+}
