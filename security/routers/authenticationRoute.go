@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
+	configService "rmtly-server/config/services"
 	qrService "rmtly-server/qrcode/services"
 	"rmtly-server/routers/routersUtil"
 	"rmtly-server/security/interfaces"
@@ -19,7 +20,9 @@ func AuthenticationRouter(router *mux.Router) {
 	subRouter.HandleFunc("/signUp", func(writer http.ResponseWriter, request *http.Request) {
 		routersUtil.ContentTypeJson(writer)
 
-		defer request.Body.Close()
+		defer func() {
+			_ = request.Body.Close()
+		}()
 
 		signUpRequest := new(interfaces.SignUpRequest)
 		err := json.NewDecoder(request.Body).Decode(signUpRequest)
@@ -30,7 +33,7 @@ func AuthenticationRouter(router *mux.Router) {
 			return
 		}
 
-		if signUpRequest.QrCode != "authenticationCode" {
+		if signUpRequest.QrCode != getSecret() {
 			writer.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -56,10 +59,14 @@ func AuthenticationRouter(router *mux.Router) {
 	}).Methods(http.MethodPost)
 
 	subRouter.HandleFunc("/code", func(writer http.ResponseWriter, request *http.Request) {
-		code := "authenticationCode"
+		code := getSecret()
 		qrService.ShowQr(code)
 		fmt.Printf("Scan the code or type: %s", code)
 		writer.WriteHeader(http.StatusOK)
 	}).Methods(http.MethodGet)
 
+}
+
+func getSecret() string {
+	return configService.GetConfig().Security.Secret
 }

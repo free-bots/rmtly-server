@@ -8,6 +8,7 @@ import (
 	"rmtly-server/application/interfaces"
 	"rmtly-server/application/services"
 	"rmtly-server/routers/routersUtil"
+	"rmtly-server/security/routers/routerUtils"
 	"strconv"
 )
 
@@ -16,7 +17,7 @@ const PREFIX = "/applications"
 func ApplicationRouter(router *mux.Router) {
 	subRouter := router.PathPrefix(PREFIX).Subrouter()
 
-	//subRouter.Use(routerUtils.AuthorizationMiddleware)
+	subRouter.Use(routerUtils.AuthorizationMiddleware)
 
 	subRouter.Queries("sortedBy", "{*}").HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		routersUtil.ContentTypeJson(writer)

@@ -10,7 +10,6 @@ type Config struct {
 type SecurityConfig struct {
 	ExpirationInDays int    `json:"expirationInDays"`
 	Secret           string `json:"secret"`
-	KeyFile          string `json:"keyFile"` // todo remove secret and use key file
 }
 
 type NetworkConfig struct {
