@@ -1,24 +1,52 @@
-```
-                _   _
-               | | | |
- _ __ _ __ ___ | |_| |_   _ ______ ___  ___ _ ____   _____ _ __
-| '__| '_ ` _ \| __| | | | |______/ __|/ _ \ '__\ \ / / _ \ '__|
-| |  | | | | | | |_| | |_| |      \__ \  __/ |   \ V /  __/ |
-|_|  |_| |_| |_|\__|_|\__, |      |___/\___|_|    \_/ \___|_|
-                       __/ |
-                      |___/
-```
+# Rmtly-Server
+![](./.README/header.png)
 
-## About
-rmtly-server is a server application written in golang that allows you to start application with a rest api
+<p align="center">Server for remote control your pc 💻</p>
 
+<p align="center">
+    <a href="https://github.com/free-bots/rmtly-server/releases" alt="GitHub release (latest by date)">
+        <img alt="GitHub" src="https://img.shields.io/github/v/release/free-bots/rmtly-server?style=flat-square"></a>
+    <a href="https://github.com/free-bots/rmtly-server/blob/master/LICENSE.md" alt="License">
+        <img alt="GitHub" src="https://img.shields.io/github/license/free-bots/rmtly-server?style=flat-square"></a>
+    <a href="https://github.com/free-bots/rmtly-server/graphs/contributors" alt="Contributors">
+        <img alt="GitHub" src="https://img.shields.io/github/contributors/free-bots/rmtly-server?style=flat-square"></a>
+</p>
+
+# Table of Contents
+
+- [Rmtly-Server](#rmtly-server)
+- [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Requirements](#requirements)
+    - [Ubuntu](#ubuntu)
+    - [Arch Linux](#arch-linux)
+  - [Build](#build)
+  - [Run](#run)
+  - [Contribution](#contribution)
+  - [About](#about)
+  - [API](#api)
+    - [Get all applications](#get-all-applications)
+    - [Get single application](#get-single-application)
+    - [Run an application](#run-an-application)
+    - [Get icon of an application](#get-icon-of-an-application)
+    - [SignUp a device](#signup-a-device)
+    - [Configuration](#configuration)
+      - [Default Config](#default-config)
+  - [Mobile App](#mobile-app)
+  - [License](#license)
+
+## Features
+
+- List all installed applications of your pc
+- List all application categories of your pc
+- Start applications with or without delay
 
 ## Requirements
-Ubuntu
+### Ubuntu
 ```
 sudo apt install libgtk-3-dev libcairo2-dev libglib2.0-dev libnotify-bin 
 ```
-Arch Linux
+### Arch Linux
 ```
 sudo pacman -S gtk3 libnotify
 ```
@@ -28,6 +56,13 @@ Run `make` or `make build` and at `<project directory>/bin` the binary called rm
 
 ## Run
 After building the project run `make run` or open the rmtly-server file in the build directory.
+
+## Contribution
+
+If you miss an important feature fell free to contribute or create a feature request.
+
+## About
+rmtly-server is a server application written in golang that allows you to start application with a rest api
 
 ## API
 ### Get all applications
@@ -58,7 +93,7 @@ after requesting the code go to the terminal and scan the created qr code or typ
 }
 ```
 to `http://localhost:3000/authentication/signUp` 
-after that you get an jwt and add it to your headers for the requests
+after that you get a jwt and add it to your headers for the requests
 
 ### Configuration
 The config file for this server is located at `.config/rmtly-server/config.json` this file is auto generated if not available.
@@ -67,25 +102,22 @@ The config file for this server is located at `.config/rmtly-server/config.json`
 ```
 {
   "application": { "cacheExpiresInMillis": 10000 },
-  "image": {
-    "cacheExpiresInMillis": 10000,
-    "maxImagesInCache": 100, //number of images in the cache
-    "imageQuality": 512 // size in pixels
-  },
   "security": {
     "expirationInDays": 99, // jwt expiration time
     "secret": "authenticationCode",
-    "keyFile": ""
   },
   "network": { "address": "0.0.0.0:3000" }
 }
 ```
 
+## Mobile App
+Check out [Rmtly](https://github.com/free-bots/rmtly) to control your pc with your phone.
+
 
 ## License
 > MIT License
 
-> Copyright (c) 2020 free-bots
+> Copyright (c) 2021 free-bots
 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
