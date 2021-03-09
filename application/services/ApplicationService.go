@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"fmt"
+	GoppilcationEntry "github.com/free-bots/GopplicationEntry"
 	"rmtly-server/application/applicationUtils"
 	"rmtly-server/application/interfaces"
 	"rmtly-server/application/repositories"
@@ -12,18 +13,18 @@ import (
 
 // cache
 // application
-var cachedApplications []*interfaces.ApplicationEntry
+var cachedApplications []*GoppilcationEntry.ApplicationEntry
 var lastApplicationCacheRefresh = time.Now()
 
 // icons
 var cachedImages map[string]interfaces.IconResponse
 var lastIconCacheRefresh = time.Now()
 
-func GetApplications() []*interfaces.ApplicationEntry {
+func GetApplications() []*GoppilcationEntry.ApplicationEntry {
 	return repositories.FindAll()
 }
 
-func GetApplicationById(applicationId string) *interfaces.ApplicationEntry {
+func GetApplicationById(applicationId string) *GoppilcationEntry.ApplicationEntry {
 	return repositories.FindById(applicationId)
 }
 
@@ -32,12 +33,12 @@ func GetApplicationsSortedBy(sortKey string) *interfaces.SortedApplicationRespon
 
 	switch sortKey {
 	case "category":
-		categoryMap := make(map[string][]*interfaces.ApplicationEntry)
+		categoryMap := make(map[string][]*GoppilcationEntry.ApplicationEntry)
 		for _, application := range applications {
 			for _, category := range application.Categories {
 				mapValue, exists := categoryMap[category]
 				if !exists {
-					mapValue = make([]*interfaces.ApplicationEntry, 0)
+					mapValue = make([]*GoppilcationEntry.ApplicationEntry, 0)
 				}
 				categoryMap[category] = append(mapValue, application)
 			}
@@ -77,7 +78,7 @@ func applicationCacheExpired() bool {
 	return cacheExpired(lastApplicationCacheRefresh, cacheDuration)
 }
 
-func refreshApplicationCache(applications []*interfaces.ApplicationEntry) {
+func refreshApplicationCache(applications []*GoppilcationEntry.ApplicationEntry) {
 	cachedApplications = applications
 	lastApplicationCacheRefresh = time.Now()
 }

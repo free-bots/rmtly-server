@@ -1,5 +1,7 @@
 package interfaces
 
+import GoppilcationEntry "github.com/free-bots/GopplicationEntry"
+
 type IconResponse struct {
 	ApplicationId string `json:"applicationId"`
 	IconBase64    string `json:"iconBase64"`
@@ -11,10 +13,10 @@ type SortedApplicationResponse struct {
 }
 
 type SortedValue struct {
-	SortedValue        string              `json:"sortedValue"`
-	ApplicationEntries []*ApplicationEntry `json:"applicationEntries"`
+	SortedValue        string                                `json:"sortedValue"`
+	ApplicationEntries []*GoppilcationEntry.ApplicationEntry `json:"applicationEntries"`
 }
 
 type ExecuteResponse struct {
-	Application *ApplicationEntry `json:"application"`
+	Application *GoppilcationEntry.ApplicationEntry `json:"application"`
 }
