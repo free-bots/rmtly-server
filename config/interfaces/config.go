@@ -5,6 +5,7 @@ type Config struct {
 	Image       ImageConfig       `json:"image"`
 	Security    SecurityConfig    `json:"security"`
 	Network     NetworkConfig     `json:"network"`
+	Information Information       `json:"information"`
 }
 
 type SecurityConfig struct {
@@ -24,4 +25,9 @@ type ImageConfig struct {
 	CacheExpiresInMillis int `json:"cacheExpiresInMillis"`
 	MaxImagesInCache     int `json:"maxImagesInCache"`
 	ImageQuality         int `json:"imageQuality"`
+}
+
+type Information struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
