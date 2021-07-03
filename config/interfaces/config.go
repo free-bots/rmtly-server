@@ -1,11 +1,12 @@
 package interfaces
 
 type Config struct {
-	Application ApplicationConfig `json:"application"`
-	Image       ImageConfig       `json:"image"`
-	Security    SecurityConfig    `json:"security"`
-	Network     NetworkConfig     `json:"network"`
-	Information Information       `json:"information"`
+	Application  ApplicationConfig `json:"application"`
+	Image        ImageConfig       `json:"image"`
+	Security     SecurityConfig    `json:"security"`
+	Network      NetworkConfig     `json:"network"`
+	Information  Information       `json:"information"`
+	ScriptConfig ScriptConfig      `json:"script_config"`
 }
 
 type SecurityConfig struct {
@@ -30,4 +31,9 @@ type ImageConfig struct {
 type Information struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type ScriptConfig struct {
+	Enabled bool   `json:"enabled"`
+	Path    string `json:"path"`
 }

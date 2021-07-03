@@ -27,6 +27,17 @@ func Execute(applicationId string, request interfaces.ExecuteRequest) *interface
 	return response
 }
 
+func ExecuteScript(scriptPath string, request interfaces.ExecuteRequest) {
+	c := make(chan bool)
+	go func() {
+		if request.ExecuteDelay > 0 {
+			time.Sleep(time.Duration(request.ExecuteDelay) * time.Millisecond)
+		}
+		runCommand("/bin/bash "+scriptPath, c)
+	}()
+	notificationService.SendAsync(scriptPath, "executed by rmtly-server")
+}
+
 func runCommand(command string, c chan bool) {
 	args, err := shlex.Split(command)
 	if err != nil {

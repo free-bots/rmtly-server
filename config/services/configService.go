@@ -109,5 +109,9 @@ func getDefaultConfig() interfaces.Config {
 			Id:   "rmtly",
 			Name: "rmtly",
 		},
+		ScriptConfig: interfaces.ScriptConfig{
+			Path:    filepath.Join(configDir, "scripts"),
+			Enabled: true,
+		},
 	}
 }

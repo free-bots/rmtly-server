@@ -6,6 +6,7 @@ import (
 	"rmtly-server/application/routers"
 	routers4 "rmtly-server/information/routers"
 	routers2 "rmtly-server/notification/routers"
+	routers5 "rmtly-server/scripts/routers"
 	routers3 "rmtly-server/security/routers"
 )
 
@@ -30,6 +31,7 @@ func RootRouter() *mux.Router {
 	routers2.NotificationRouter(router)
 	routers3.AuthenticationRouter(router)
 	routers4.InformationRouter(router)
+	routers5.ScriptRouter(router)
 
 	return router
 }
