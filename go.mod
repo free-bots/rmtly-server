@@ -3,8 +3,8 @@ module rmtly-server
 go 1.17
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/free-bots/GopplicationEntry v0.0.0-20210310163550-780a94942a8d
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0

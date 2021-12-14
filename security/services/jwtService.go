@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	configService "rmtly-server/config/services"
 	"rmtly-server/security/interfaces"
 	"time"
