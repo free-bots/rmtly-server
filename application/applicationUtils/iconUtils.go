@@ -2,13 +2,15 @@ package applicationUtils
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/diamondburned/gotk4/pkg/gdk/v4"
+	"github.com/diamondburned/gotk4/pkg/gtk/v4"
 	"image"
-	"image/color"
 	"image/png"
+	"io/ioutil"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -17,19 +19,7 @@ const (
 )
 
 func InitIconUtils() {
-	gtk.Init(nil)
-}
-
-func GetIconBase64(iconName string) *string {
-	icon := getIcon(iconName)
-
-	if icon == nil {
-		return nil
-	}
-
-	base64Icon := ImageToBase64(*icon)
-
-	return base64Icon
+	gtk.Init()
 }
 
 func GetIconBuffer(iconName string) *bytes.Buffer {
@@ -52,64 +42,42 @@ func GetIconBuffer(iconName string) *bytes.Buffer {
 }
 
 func GetGtkIcon(iconName string) *image.Image {
+	icon := getTheme().LookupIcon(
+		iconName,
+		make([]string, 0),
+		QUALITY,
+		1,
+		gtk.TextDirNone,
+		gtk.IconLookupPreload,
+	)
 
-	theme, err := gtk.IconThemeGetDefault()
-
+	file, err := os.Open(icon.File().Path())
 	if err != nil {
-		fmt.Println(err)
 		return nil
 	}
 
-	buff, err := theme.LoadIcon(iconName, QUALITY, 0)
+	defer file.Close()
 
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-
-	pixels := buff.GetPixels()
-
-	iconImage := image.NewRGBA(image.Rect(0, 0, buff.GetHeight(), buff.GetWidth()))
-
-	x := 0
-	y := 0
-
-	for index := 0; index <= len(pixels)-buff.GetNChannels(); index += buff.GetNChannels() {
-		r := pixels[index]
-		g := pixels[index+1]
-		b := pixels[index+2]
-		a := pixels[index+3]
-
-		iconImage.Set(x, y, color.RGBA{R: r, G: g, B: b, A: a})
-
-		x++
-
-		if x >= buff.GetWidth() {
-			x = 0
-			y++
+	if strings.Contains(file.Name(), ".svg") {
+		all, err := ioutil.ReadAll(file)
+		if err != nil {
+			return nil
 		}
+
+		toPng, err := svgToPng(all)
+		if err != nil {
+			return nil
+		}
+
+		return &toPng
 	}
 
-	subImage := iconImage.SubImage(iconImage.Bounds())
-	return &subImage
-}
-
-func ImageToBase64(image image.Image) *string {
-
-	imageBuffer := bytes.Buffer{}
-
-	err := png.Encode(&imageBuffer, image)
-
+	decodedImage, _, err := image.Decode(file)
 	if err != nil {
-		fmt.Println(err)
 		return nil
 	}
 
-	encodedString := base64.StdEncoding.EncodeToString(imageBuffer.Bytes())
-
-	withType := "data:image/png;base64," + encodedString
-
-	return &withType
+	return &decodedImage
 }
 
 func isIconNameFilePath(iconName string) bool {
@@ -164,4 +132,24 @@ func getIcon(iconName string) *image.Image {
 	}
 
 	return icon
+}
+
+func getTheme() *gtk.IconTheme {
+	return gtk.IconThemeGetForDisplay(gdk.DisplayGetDefault())
+}
+
+func svgToPng(input []byte) (image.Image, error) {
+	cmd := exec.Command("rsvg-convert", "--height", strconv.Itoa(QUALITY), "--width", strconv.Itoa(QUALITY))
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stdin = strings.NewReader(string(input))
+
+	if err := cmd.Run(); err != nil {
+		return nil, err
+	}
+	img, err := png.Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return img, nil
 }
